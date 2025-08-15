@@ -20,7 +20,7 @@ export async function Navbar() {
         </Suspense>
       </div>
       <div className="flex w-full items-center">
-        <div className="flex w-full md:w-1/3">
+        <div className="relative z-0 flex w-full md:w-1/3">
           <Link
             href="/"
             prefetch={true}
@@ -47,12 +47,12 @@ export async function Navbar() {
             </ul>
           ) : null}
         </div>
-        <div className="hidden justify-center md:flex md:w-1/3">
+        <div className="relative z-10 hidden justify-center md:flex md:w-1/3">
           <Suspense fallback={<SearchSkeleton />}>
             <Search />
           </Suspense>
         </div>
-        <div className="flex justify-end md:w-1/3">
+        <div className="relative z-0 flex justify-end md:w-1/3">
           <CartModal />
         </div>
       </div>
