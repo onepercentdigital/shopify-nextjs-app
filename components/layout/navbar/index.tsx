@@ -1,16 +1,16 @@
-import CartModal from 'components/cart/modal';
-import LogoSquare from 'components/logo-square';
-import { getMenu } from 'lib/shopify';
-import { Menu } from 'lib/shopify/types';
-import Link from 'next/link';
-import { Suspense } from 'react';
-import MobileMenu from './mobile-menu';
-import Search, { SearchSkeleton } from './search';
+import CartModal from "components/cart/modal";
+import LogoSquare from "components/logo-square";
+import { getMenu } from "lib/shopify";
+import { Menu } from "lib/shopify/types";
+import Link from "next/link";
+import { Suspense } from "react";
+import MobileMenu from "./mobile-menu";
+import Search, { SearchSkeleton } from "./search";
 
 const { SITE_NAME } = process.env;
 
 export async function Navbar() {
-  const menu = await getMenu('next-js-frontend-header-menu');
+  const menu = await getMenu("next-js-frontend-header-menu");
 
   return (
     <nav className="relative flex items-center justify-between p-4 lg:px-6">
@@ -20,7 +20,7 @@ export async function Navbar() {
         </Suspense>
       </div>
       <div className="flex w-full items-center">
-        <div className="flex w-full md:w-1/3">
+        <div className="flex w-full md:w-1/3 relative z-0">
           <Link
             href="/"
             prefetch={true}
@@ -47,12 +47,12 @@ export async function Navbar() {
             </ul>
           ) : null}
         </div>
-        <div className="hidden justify-center md:flex md:w-1/3">
+        <div className="hidden justify-center md:flex md:w-1/3 relative z-10">
           <Suspense fallback={<SearchSkeleton />}>
             <Search />
           </Suspense>
         </div>
-        <div className="flex justify-end md:w-1/3">
+        <div className="flex justify-end md:w-1/3 relative z-0">
           <CartModal />
         </div>
       </div>
