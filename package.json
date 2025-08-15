@@ -31,6 +31,16 @@
     "tailwindcss": "^4.1.12",
     "typescript": "^5.9.2"
   },
+  "prettier": {
+    "semi": true,
+    "singleQuote": true,
+    "tabWidth": 2,
+    "trailingComma": "all",
+    "printWidth": 80,
+    "plugins": [
+      "prettier-plugin-tailwindcss"
+    ]
+  },
   "trustedDependencies": [
     "@tailwindcss/oxide",
     "sharp"
