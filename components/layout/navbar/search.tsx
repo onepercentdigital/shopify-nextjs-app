@@ -1,14 +1,33 @@
 'use client';
 
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation'; // Import useRouter
 
 export default function Search() {
+  const router = useRouter(); // Initialize useRouter
   const searchParams = useSearchParams();
+
+  function onSubmit(event: React.FormEvent<HTMLFormElement>) {
+    // Add onSubmit handler
+    event.preventDefault(); // Prevent full page reload
+
+    const formData = new FormData(event.currentTarget);
+    const searchQuery = formData.get('q');
+
+    if (searchQuery) {
+      // Create a new URLSearchParams object from the current ones
+      const newSearchParams = new URLSearchParams(searchParams.toString());
+      newSearchParams.set('q', searchQuery.toString()); // Set the new search query
+
+      // Push to the new search URL, triggering client-side navigation
+      router.push(`/search?${newSearchParams.toString()}`);
+    }
+  }
 
   return (
     <form
-      action="/search"
+      onSubmit={onSubmit} // Attach onSubmit handler
+      // Remove action attribute to prevent default browser form submission
       className="w-max-[550px] relative w-full lg:w-80 xl:w-full"
     >
       <input
@@ -26,6 +45,7 @@ export default function Search() {
   );
 }
 
+// SearchSkeleton remains unchanged
 export function SearchSkeleton() {
   return (
     <form className="w-max-[550px] relative w-full lg:w-80 xl:w-full">
