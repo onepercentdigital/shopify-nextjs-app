@@ -4,14 +4,15 @@ import type {
   Cart,
   CartItem,
   Product,
-  ProductVariant
+  ProductVariant,
 } from 'lib/shopify/types';
 import React, {
   createContext,
   use,
+  useCallback,
   useContext,
   useMemo,
-  useOptimistic
+  useOptimistic,
 } from 'react';
 
 type UpdateType = 'plus' | 'minus' | 'delete';
@@ -38,7 +39,7 @@ function calculateItemCost(quantity: number, price: string): string {
 
 function updateCartItem(
   item: CartItem,
-  updateType: UpdateType
+  updateType: UpdateType,
 ): CartItem | null {
   if (updateType === 'delete') return null;
 
@@ -49,7 +50,7 @@ function updateCartItem(
   const singleItemAmount = Number(item.cost.totalAmount.amount) / item.quantity;
   const newTotalAmount = calculateItemCost(
     newQuantity,
-    singleItemAmount.toString()
+    singleItemAmount.toString(),
   );
 
   return {
@@ -59,16 +60,16 @@ function updateCartItem(
       ...item.cost,
       totalAmount: {
         ...item.cost.totalAmount,
-        amount: newTotalAmount
-      }
-    }
+        amount: newTotalAmount,
+      },
+    },
   };
 }
 
 function createOrUpdateCartItem(
   existingItem: CartItem | undefined,
   variant: ProductVariant,
-  product: Product
+  product: Product,
 ): CartItem {
   const quantity = existingItem ? existingItem.quantity + 1 : 1;
   const totalAmount = calculateItemCost(quantity, variant.price.amount);
@@ -79,8 +80,8 @@ function createOrUpdateCartItem(
     cost: {
       totalAmount: {
         amount: totalAmount,
-        currencyCode: variant.price.currencyCode
-      }
+        currencyCode: variant.price.currencyCode,
+      },
     },
     merchandise: {
       id: variant.id,
@@ -90,19 +91,19 @@ function createOrUpdateCartItem(
         id: product.id,
         handle: product.handle,
         title: product.title,
-        featuredImage: product.featuredImage
-      }
-    }
+        featuredImage: product.featuredImage,
+      },
+    },
   };
 }
 
 function updateCartTotals(
-  lines: CartItem[]
+  lines: CartItem[],
 ): Pick<Cart, 'totalQuantity' | 'cost'> {
   const totalQuantity = lines.reduce((sum, item) => sum + item.quantity, 0);
   const totalAmount = lines.reduce(
     (sum, item) => sum + Number(item.cost.totalAmount.amount),
-    0
+    0,
   );
   const currencyCode = lines[0]?.cost.totalAmount.currencyCode ?? 'USD';
 
@@ -111,8 +112,8 @@ function updateCartTotals(
     cost: {
       subtotalAmount: { amount: totalAmount.toString(), currencyCode },
       totalAmount: { amount: totalAmount.toString(), currencyCode },
-      totalTaxAmount: { amount: '0', currencyCode }
-    }
+      totalTaxAmount: { amount: '0', currencyCode },
+    },
   };
 }
 
@@ -125,8 +126,8 @@ function createEmptyCart(): Cart {
     cost: {
       subtotalAmount: { amount: '0', currencyCode: 'USD' },
       totalAmount: { amount: '0', currencyCode: 'USD' },
-      totalTaxAmount: { amount: '0', currencyCode: 'USD' }
-    }
+      totalTaxAmount: { amount: '0', currencyCode: 'USD' },
+    },
   };
 }
 
@@ -140,7 +141,7 @@ function cartReducer(state: Cart | undefined, action: CartAction): Cart {
         .map((item) =>
           item.merchandise.id === merchandiseId
             ? updateCartItem(item, updateType)
-            : item
+            : item,
         )
         .filter(Boolean) as CartItem[];
 
@@ -151,38 +152,38 @@ function cartReducer(state: Cart | undefined, action: CartAction): Cart {
           totalQuantity: 0,
           cost: {
             ...currentCart.cost,
-            totalAmount: { ...currentCart.cost.totalAmount, amount: '0' }
-          }
+            totalAmount: { ...currentCart.cost.totalAmount, amount: '0' },
+          },
         };
       }
 
       return {
         ...currentCart,
         ...updateCartTotals(updatedLines),
-        lines: updatedLines
+        lines: updatedLines,
       };
     }
     case 'ADD_ITEM': {
       const { variant, product } = action.payload;
       const existingItem = currentCart.lines.find(
-        (item) => item.merchandise.id === variant.id
+        (item) => item.merchandise.id === variant.id,
       );
       const updatedItem = createOrUpdateCartItem(
         existingItem,
         variant,
-        product
+        product,
       );
 
       const updatedLines = existingItem
         ? currentCart.lines.map((item) =>
-            item.merchandise.id === variant.id ? updatedItem : item
+            item.merchandise.id === variant.id ? updatedItem : item,
           )
         : [...currentCart.lines, updatedItem];
 
       return {
         ...currentCart,
         ...updateCartTotals(updatedLines),
-        lines: updatedLines
+        lines: updatedLines,
       };
     }
     default:
@@ -192,7 +193,7 @@ function cartReducer(state: Cart | undefined, action: CartAction): Cart {
 
 export function CartProvider({
   children,
-  cartPromise
+  cartPromise,
 }: {
   children: React.ReactNode;
   cartPromise: Promise<Cart | undefined>;
@@ -213,26 +214,32 @@ export function useCart() {
   const initialCart = use(context.cartPromise);
   const [optimisticCart, updateOptimisticCart] = useOptimistic(
     initialCart,
-    cartReducer
+    cartReducer,
   );
 
-  const updateCartItem = (merchandiseId: string, updateType: UpdateType) => {
-    updateOptimisticCart({
-      type: 'UPDATE_ITEM',
-      payload: { merchandiseId, updateType }
-    });
-  };
+  const updateCartItem = useCallback(
+    (merchandiseId: string, updateType: UpdateType) => {
+      updateOptimisticCart({
+        type: 'UPDATE_ITEM',
+        payload: { merchandiseId, updateType },
+      });
+    },
+    [updateOptimisticCart],
+  );
 
-  const addCartItem = (variant: ProductVariant, product: Product) => {
-    updateOptimisticCart({ type: 'ADD_ITEM', payload: { variant, product } });
-  };
+  const addCartItem = useCallback(
+    (variant: ProductVariant, product: Product) => {
+      updateOptimisticCart({ type: 'ADD_ITEM', payload: { variant, product } });
+    },
+    [updateOptimisticCart],
+  );
 
   return useMemo(
     () => ({
       cart: optimisticCart,
       updateCartItem,
-      addCartItem
+      addCartItem,
     }),
-    [optimisticCart]
+    [optimisticCart, updateCartItem, addCartItem],
   );
 }
