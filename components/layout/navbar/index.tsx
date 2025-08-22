@@ -48,11 +48,9 @@ export async function Navbar() {
           ) : null}
         </div>
         <div className="hidden justify-center md:flex md:w-1/3">
-          <div className="w-full lg:w-80 xl:w-full">
-            <Suspense fallback={<SearchSkeleton />}>
-              <Search />
-            </Suspense>
-          </div>
+          <Suspense fallback={<SearchSkeleton />}>
+            <Search />
+          </Suspense>
         </div>
         <div className="flex justify-end md:w-1/3">
           <CartModal />

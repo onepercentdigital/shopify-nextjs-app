@@ -6,7 +6,7 @@ import { Suspense } from 'react';
 import ChildrenWrapper from './children-wrapper';
 
 export default function SearchLayout({
-  children
+  children,
 }: {
   children: React.ReactNode;
 }) {

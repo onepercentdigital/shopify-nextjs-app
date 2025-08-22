@@ -1,7 +1,13 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import React, { createContext, useContext, useMemo, useOptimistic } from 'react';
+import React, {
+  createContext,
+  useCallback, // Import useCallback
+  useContext,
+  useMemo,
+  useOptimistic,
+} from 'react';
 
 type ProductState = {
   [key: string]: string;
@@ -32,32 +38,44 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
     getInitialState(),
     (prevState: ProductState, update: ProductState) => ({
       ...prevState,
-      ...update
-    })
+      ...update,
+    }),
   );
 
-  const updateOption = (name: string, value: string) => {
-    const newState = { [name]: value };
-    setOptimisticState(newState);
-    return { ...state, ...newState };
-  };
+  // updateOption wrapped in useCallback, with correct dependencies
+  const updateOption = useCallback(
+    (name: string, value: string) => {
+      const newState = { [name]: value };
+      setOptimisticState(newState);
+      // 'state' is used in the return value, so it must be a dependency
+      return { ...state, ...newState };
+    },
+    [setOptimisticState, state], // Depends on setOptimisticState (stable) and state
+  );
 
-  const updateImage = (index: string) => {
-    const newState = { image: index };
-    setOptimisticState(newState);
-    return { ...state, ...newState };
-  };
+  // updateImage wrapped in useCallback, with correct dependencies
+  const updateImage = useCallback(
+    (index: string) => {
+      const newState = { image: index };
+      setOptimisticState(newState);
+      // 'state' is used in the return value, so it must be a dependency
+      return { ...state, ...newState };
+    },
+    [setOptimisticState, state], // Depends on setOptimisticState (stable) and state
+  );
 
   const value = useMemo(
     () => ({
       state,
       updateOption,
-      updateImage
+      updateImage,
     }),
-    [state]
+    [state, updateOption, updateImage], // All dependencies listed
   );
 
-  return <ProductContext.Provider value={value}>{children}</ProductContext.Provider>;
+  return (
+    <ProductContext.Provider value={value}>{children}</ProductContext.Provider>
+  );
 }
 
 export function useProduct() {

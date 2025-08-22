@@ -1,21 +1,21 @@
-"use client";
+'use client';
 
-import { Dialog, Transition } from "@headlessui/react";
-import { ShoppingCartIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import clsx from "clsx";
-import LoadingDots from "components/loading-dots";
-import Price from "components/price";
-import { DEFAULT_OPTION } from "lib/constants";
-import { createUrl } from "lib/utils";
-import Image from "next/image";
-import Link from "next/link";
-import { Fragment, useEffect, useRef, useState } from "react";
-import { useFormStatus } from "react-dom";
-import { createCartAndSetCookie, redirectToCheckout } from "./actions";
-import { useCart } from "./cart-context";
-import { DeleteItemButton } from "./delete-item-button";
-import { EditItemQuantityButton } from "./edit-item-quantity-button";
-import OpenCart from "./open-cart";
+import { Dialog, Transition } from '@headlessui/react';
+import { ShoppingCartIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import clsx from 'clsx';
+import LoadingDots from 'components/loading-dots';
+import Price from 'components/price';
+import { DEFAULT_OPTION } from 'lib/constants';
+import { createUrl } from 'lib/utils';
+import Image from 'next/image';
+import Link from 'next/link';
+import { Fragment, useEffect, useRef, useState } from 'react';
+import { useFormStatus } from 'react-dom';
+import { createCartAndSetCookie, redirectToCheckout } from './actions';
+import { useCart } from './cart-context';
+import { DeleteItemButton } from './delete-item-button';
+import { EditItemQuantityButton } from './edit-item-quantity-button';
+import OpenCart from './open-cart';
 
 type MerchandiseSearchParams = {
   [key: string]: string;
@@ -45,7 +45,7 @@ export default function CartModal() {
       }
       quantityRef.current = cart?.totalQuantity;
     }
-  }, [isOpen, cart?.totalQuantity, quantityRef]);
+  }, [isOpen, cart?.totalQuantity]);
 
   return (
     <>
@@ -78,7 +78,7 @@ export default function CartModal() {
             leaveFrom="translate-x-0"
             leaveTo="translate-x-full"
           >
-            <Dialog.Panel className="fixed bottom-0 right-0 top-0 flex h-full w-full flex-col border-l border-neutral-200 bg-white/80 p-6 text-black backdrop-blur-xl md:w-[390px] dark:border-neutral-700 dark:bg-black/80 dark:text-white">
+            <Dialog.Panel className="fixed top-0 right-0 bottom-0 flex h-full w-full flex-col border-l border-neutral-200 bg-white/80 p-6 text-black backdrop-blur-xl md:w-[390px] dark:border-neutral-700 dark:bg-black/80 dark:text-white">
               <div className="flex items-center justify-between">
                 <p className="text-lg font-semibold">My Cart</p>
                 <button aria-label="Close cart" onClick={closeCart}>
@@ -99,8 +99,8 @@ export default function CartModal() {
                     {cart.lines
                       .sort((a, b) =>
                         a.merchandise.product.title.localeCompare(
-                          b.merchandise.product.title
-                        )
+                          b.merchandise.product.title,
+                        ),
                       )
                       .map((item, i) => {
                         const merchandiseSearchParams =
@@ -112,21 +112,21 @@ export default function CartModal() {
                               merchandiseSearchParams[name.toLowerCase()] =
                                 value;
                             }
-                          }
+                          },
                         );
 
                         const merchandiseUrl = createUrl(
                           `/product/${item.merchandise.product.handle}`,
-                          new URLSearchParams(merchandiseSearchParams)
+                          new URLSearchParams(merchandiseSearchParams),
                         );
 
                         return (
                           <li
-                            key={i}
+                            key={item.id ?? item.merchandise.id}
                             className="flex w-full flex-col border-b border-neutral-300 dark:border-neutral-700"
                           >
                             <div className="relative flex w-full flex-row justify-between px-1 py-4">
-                              <div className="absolute z-40 -ml-1 -mt-2">
+                              <div className="absolute z-40 -mt-2 -ml-1">
                                 <DeleteItemButton
                                   item={item}
                                   optimisticUpdate={updateCartItem}
@@ -206,11 +206,11 @@ export default function CartModal() {
                         currencyCode={cart.cost.totalTaxAmount.currencyCode}
                       />
                     </div>
-                    <div className="mb-3 flex items-center justify-between border-b border-neutral-200 pb-1 pt-1 dark:border-neutral-700">
+                    <div className="mb-3 flex items-center justify-between border-b border-neutral-200 pt-1 pb-1 dark:border-neutral-700">
                       <p>Shipping</p>
                       <p className="text-right">Calculated at checkout</p>
                     </div>
-                    <div className="mb-3 flex items-center justify-between border-b border-neutral-200 pb-1 pt-1 dark:border-neutral-700">
+                    <div className="mb-3 flex items-center justify-between border-b border-neutral-200 pt-1 pb-1 dark:border-neutral-700">
                       <p>Total</p>
                       <Price
                         className="text-right text-base text-black dark:text-white"
@@ -237,8 +237,8 @@ function CloseCart({ className }: { className?: string }) {
     <div className="relative flex h-11 w-11 items-center justify-center rounded-md border border-neutral-200 text-black transition-colors dark:border-neutral-700 dark:text-white">
       <XMarkIcon
         className={clsx(
-          "h-6 transition-all ease-in-out hover:scale-110",
-          className
+          'h-6 transition-all ease-in-out hover:scale-110',
+          className,
         )}
       />
     </div>
@@ -254,7 +254,7 @@ function CheckoutButton() {
       type="submit"
       disabled={pending}
     >
-      {pending ? <LoadingDots className="bg-white" /> : "Proceed to Checkout"}
+      {pending ? <LoadingDots className="bg-white" /> : 'Proceed to Checkout'}
     </button>
   );
 }

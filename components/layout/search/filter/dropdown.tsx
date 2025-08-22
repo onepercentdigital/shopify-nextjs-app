@@ -1,6 +1,7 @@
 'use client';
 
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
+import { SortFilterItem } from 'lib/constants';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import type { ListItem } from '.';
@@ -37,7 +38,8 @@ export default function FilterItemDropdown({ list }: { list: ListItem[] }) {
 
   return (
     <div className="relative" ref={ref}>
-      <div
+      <button
+        type="button"
         onClick={() => {
           setOpenSelect(!openSelect);
         }}
@@ -45,17 +47,22 @@ export default function FilterItemDropdown({ list }: { list: ListItem[] }) {
       >
         <div>{active}</div>
         <ChevronDownIcon className="h-4" />
-      </div>
+      </button>
       {openSelect && (
-        <div
-          onClick={() => {
-            setOpenSelect(false);
-          }}
-          className="absolute z-40 w-full rounded-b-md bg-white p-4 shadow-md dark:bg-black"
-        >
-          {list.map((item: ListItem, i) => (
-            <FilterItem key={i} item={item} />
-          ))}
+        <div className="absolute z-40 w-full rounded-b-md bg-white p-4 shadow-md dark:bg-black">
+          {list.map((item: ListItem) => {
+            // ✅ FIX: Use a more robust key derivation for union types
+            let key: string;
+            if ('path' in item) {
+              key = item.path; // item is PathFilterItem
+            } else {
+              // item must be SortFilterItem (by process of elimination from ListItem union)
+              const sortItem = item as SortFilterItem; // Safely assert for specific property access
+              key = sortItem.slug ?? sortItem.title; // Use slug if available, otherwise title (both are guaranteed string or null for slug)
+            }
+
+            return <FilterItem key={key} item={item} />;
+          })}
         </div>
       )}
     </div>

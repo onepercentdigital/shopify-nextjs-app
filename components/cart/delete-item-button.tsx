@@ -7,7 +7,7 @@ import { useActionState } from 'react';
 
 export function DeleteItemButton({
   item,
-  optimisticUpdate
+  optimisticUpdate,
 }: {
   item: CartItem;
   optimisticUpdate: any;
@@ -30,9 +30,9 @@ export function DeleteItemButton({
       >
         <XMarkIcon className="mx-[1px] h-4 w-4 text-white dark:text-black" />
       </button>
-      <p aria-live="polite" className="sr-only" role="status">
+      <output aria-live="polite" className="sr-only">
         {message}
-      </p>
+      </output>
     </form>
   );
 }
