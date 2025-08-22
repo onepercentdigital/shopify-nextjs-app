@@ -39,7 +39,7 @@ export default function FilterItemDropdown({ list }: { list: ListItem[] }) {
   return (
     <div className="relative" ref={ref}>
       <button
-        type="button" // Important: explicitly set type="button" to prevent accidental form submission
+        type="button"
         onClick={() => {
           setOpenSelect(!openSelect);
         }}
