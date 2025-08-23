@@ -26,15 +26,22 @@ export default function FilterItemDropdown({ list }: { list: ListItem[] }) {
   }, []);
 
   useEffect(() => {
+    let newActiveTitle = '';
     list.forEach((listItem: ListItem) => {
       if (
         ('path' in listItem && pathname === listItem.path) ||
         ('slug' in listItem && searchParams.get('sort') === listItem.slug)
       ) {
-        setActive(listItem.title);
+        newActiveTitle = listItem.title;
       }
     });
-  }, [pathname, list, searchParams]);
+
+    // FIX: Only update state if the active title has actually changed.
+    // This prevents the infinite render loop.
+    if (newActiveTitle && newActiveTitle !== active) {
+      setActive(newActiveTitle);
+    }
+  }, [pathname, list, searchParams, active]); // Add `active` to dependencies
 
   return (
     <div className="relative" ref={ref}>
@@ -51,14 +58,12 @@ export default function FilterItemDropdown({ list }: { list: ListItem[] }) {
       {openSelect && (
         <div className="absolute z-40 w-full rounded-b-md bg-white p-4 shadow-md dark:bg-black">
           {list.map((item: ListItem) => {
-            // ✅ FIX: Use a more robust key derivation for union types
             let key: string;
             if ('path' in item) {
-              key = item.path; // item is PathFilterItem
+              key = item.path;
             } else {
-              // item must be SortFilterItem (by process of elimination from ListItem union)
-              const sortItem = item as SortFilterItem; // Safely assert for specific property access
-              key = sortItem.slug ?? sortItem.title; // Use slug if available, otherwise title (both are guaranteed string or null for slug)
+              const sortItem = item as SortFilterItem;
+              key = sortItem.slug ?? sortItem.title;
             }
 
             return <FilterItem key={key} item={item} />;
