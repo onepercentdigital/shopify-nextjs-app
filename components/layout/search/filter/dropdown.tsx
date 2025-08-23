@@ -3,16 +3,31 @@
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
 import type { SortFilterItem } from 'lib/constants';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ListItem } from '.';
 import { FilterItem } from './item';
 
 export default function FilterItemDropdown({ list }: { list: ListItem[] }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [active, setActive] = useState('');
+  // read only the value we care about so deps stay stable
+  const sortParam = searchParams.get('sort') ?? null;
   const [openSelect, setOpenSelect] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLDivElement | null>(null);
+
+  const activeTitle = useMemo(() => {
+    const activeItem = list.find((listItem) => {
+      if ('path' in listItem) {
+        return pathname === listItem.path;
+      }
+      if ('slug' in listItem) {
+        return sortParam === listItem.slug;
+      }
+      return false;
+    });
+
+    return activeItem?.title ?? list[0]?.title ?? '';
+  }, [pathname, list, sortParam]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -25,42 +40,43 @@ export default function FilterItemDropdown({ list }: { list: ListItem[] }) {
     return () => window.removeEventListener('click', handleClickOutside);
   }, []);
 
+  // Close dropdown when navigation state changes to avoid UI races
   useEffect(() => {
-    list.forEach((listItem: ListItem) => {
-      if (
-        ('path' in listItem && pathname === listItem.path) ||
-        ('slug' in listItem && searchParams.get('sort') === listItem.slug)
-      ) {
-        setActive(listItem.title);
-      }
-    });
-  }, [pathname, list, searchParams]);
+    setOpenSelect(false);
+  }, [pathname, sortParam]);
+
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === 'Escape') setOpenSelect(false);
+  };
 
   return (
     <div className="relative" ref={ref}>
       <button
         type="button"
-        onClick={() => {
-          setOpenSelect(!openSelect);
-        }}
-        className="flex w-full items-center justify-between rounded-sm border border-black/30 px-4 py-2 text-sm dark:border-white/30"
+        onClick={() => setOpenSelect((s) => !s)}
+        className={
+          'flex w-full items-center justify-between rounded-sm ' +
+          'border border-black/30 px-4 py-2 text-sm dark:border-white/30'
+        }
       >
-        <div>{active}</div>
+        <div>{activeTitle}</div>
         <ChevronDownIcon className="h-4" />
       </button>
-      {openSelect && (
-        <div className="absolute z-40 w-full rounded-b-md bg-white p-4 shadow-md dark:bg-black">
-          {list.map((item: ListItem) => {
-            // ✅ FIX: Use a more robust key derivation for union types
-            let key: string;
-            if ('path' in item) {
-              key = item.path; // item is PathFilterItem
-            } else {
-              // item must be SortFilterItem (by process of elimination from ListItem union)
-              const sortItem = item as SortFilterItem; // Safely assert for specific property access
-              key = sortItem.slug ?? sortItem.title; // Use slug if available, otherwise title (both are guaranteed string or null for slug)
-            }
 
+      {openSelect && (
+        <div
+          role="menu"
+          onClick={() => setOpenSelect(false)}
+          onKeyDown={handleKeyDown}
+          className="absolute z-40 w-full rounded-b-md bg-white p-4 shadow-md dark:bg-black"
+        >
+          {list.map((item: ListItem) => {
+            let key: string;
+            if ('path' in item) key = item.path;
+            else {
+              const sortItem = item as SortFilterItem;
+              key = sortItem.slug ?? sortItem.title;
+            }
             return <FilterItem key={key} item={item} />;
           })}
         </div>
