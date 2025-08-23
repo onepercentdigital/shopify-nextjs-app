@@ -6,7 +6,8 @@ import type {
   Product,
   ProductVariant,
 } from 'lib/shopify/types';
-import React, {
+import type React from 'react';
+import {
   createContext,
   use,
   useCallback,
