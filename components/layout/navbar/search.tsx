@@ -7,20 +7,29 @@ import { useEffect, useState } from 'react';
 export default function Search() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [inputValue, setInputValue] = useState(searchParams.get('q') || '');
+  const qParam = searchParams.get('q') ?? '';
+  const [inputValue, setInputValue] = useState(qParam);
 
+  // depend only on the actual q value, not the unstable object
   useEffect(() => {
-    // Syncs the input value with the URL's 'q' parameter
-    setInputValue(searchParams.get('q') || '');
-  }, [searchParams]);
+    setInputValue(qParam);
+  }, [qParam]);
 
   function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     const newParams = new URLSearchParams(searchParams.toString());
-    newParams.set('q', inputValue);
+    const trimmed = inputValue.trim();
+    if (trimmed) newParams.set('q', trimmed);
+    else newParams.delete('q');
 
-    router.push(`/search?${newParams.toString()}`);
+    const currentQs = searchParams.toString();
+    const nextQs = newParams.toString();
+    // guard identical navigations
+    if (currentQs === nextQs) return;
+
+    const url = nextQs ? `/search?${nextQs}` : '/search';
+    router.push(url);
   }
 
   return (

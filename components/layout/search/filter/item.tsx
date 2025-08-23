@@ -13,19 +13,20 @@ function PathFilterItemComponent({ item }: { item: PathFilterItemType }) {
   const searchParams = useSearchParams();
   const active = pathname === item.path;
 
-  // Always calculate href, regardless of active state
+  // stable string so memo only reruns when the actual query changes
+  const searchString = searchParams.toString();
+
   const href = useMemo(() => {
-    const newParams = new URLSearchParams(searchParams.toString());
+    const newParams = new URLSearchParams(searchString);
     newParams.delete('q');
     return createUrl(item.path, newParams);
-  }, [item.path, searchParams]);
+  }, [item.path, searchString]);
 
   const commonProps = {
     className: clsx(
-      'w-full text-sm underline-offset-4 hover:underline dark:hover:text-neutral-100',
-      {
-        'underline underline-offset-4': active,
-      },
+      'w-full text-sm underline-offset-4 hover:underline',
+      'dark:hover:text-neutral-100',
+      { 'underline underline-offset-4': active },
     ),
   };
 
@@ -34,7 +35,7 @@ function PathFilterItemComponent({ item }: { item: PathFilterItemType }) {
       {active ? (
         <p {...commonProps}>{item.title}</p>
       ) : (
-        <Link href={href} {...commonProps}>
+        <Link href={href} prefetch={false} {...commonProps}>
           {item.title}
         </Link>
       )}
@@ -45,19 +46,16 @@ function PathFilterItemComponent({ item }: { item: PathFilterItemType }) {
 function SortFilterItemComponent({ item }: { item: SortFilterItem }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+
+  const q = searchParams.get('q') ?? undefined;
   const active = searchParams.get('sort') === item.slug;
 
-  // Always calculate href, regardless of active state
   const href = useMemo(() => {
-    const q = searchParams.get('q');
-    return createUrl(
-      pathname,
-      new URLSearchParams({
-        ...(q && { q }),
-        ...(item.slug && item.slug.length && { sort: item.slug }),
-      }),
-    );
-  }, [pathname, searchParams, item.slug]);
+    const params = new URLSearchParams();
+    if (q) params.set('q', q);
+    if (item.slug) params.set('sort', item.slug);
+    return createUrl(pathname, params);
+  }, [pathname, q, item.slug]);
 
   const commonProps = {
     className: clsx('w-full hover:underline hover:underline-offset-4', {
