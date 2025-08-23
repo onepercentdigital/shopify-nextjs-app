@@ -11,7 +11,7 @@ import {
   revalidateTag,
 } from 'next/cache';
 import { cookies, headers } from 'next/headers';
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import {
   addToCartMutation,
   createCartMutation,
@@ -31,7 +31,7 @@ import {
   getProductRecommendationsQuery,
   getProductsQuery,
 } from './queries/product';
-import {
+import type {
   Cart,
   Collection,
   Connection,

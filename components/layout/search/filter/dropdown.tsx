@@ -1,7 +1,7 @@
 'use client';
 
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
-import { SortFilterItem } from 'lib/constants';
+import type { SortFilterItem } from 'lib/constants';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import type { ListItem } from '.';

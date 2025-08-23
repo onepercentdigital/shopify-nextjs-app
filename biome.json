@@ -10,28 +10,40 @@
       "**/*.{js,jsx,ts,tsx,json,jsonc,md,mdx,mjs,cjs}",
       "!node_modules",
       "!.next",
-      "!dist"
+      "!dist",
+      "!**/*.css"
     ],
     "ignoreUnknown": true
   },
   "formatter": {
     "enabled": true,
-    "indentStyle": "space"
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 80
   },
   "linter": {
     "enabled": true,
     "rules": {
       "recommended": true,
       "style": {
-        "useImportType": "off",
-        "noNonNullAssertion": "off"
+        "useImportType": "warn",
+        "noNonNullAssertion": "warn"
       },
       "suspicious": {
         "noExplicitAny": "warn",
         "noShadowRestrictedNames": "warn"
       },
+      "correctness": {
+        "useExhaustiveDependencies": "error",
+        "noUnusedVariables": "warn",
+        "noUnusedFunctionParameters": "warn"
+      },
       "a11y": {
-        "useButtonType": "warn"
+        "useButtonType": "warn",
+        "noSvgWithoutTitle": "warn",
+        "useSemanticElements": "error",
+        "noStaticElementInteractions": "error",
+        "useKeyWithClickEvents": "error"
       },
       "security": {
         "noDangerouslySetInnerHtml": "warn"
@@ -40,7 +52,8 @@
   },
   "javascript": {
     "formatter": {
-      "quoteStyle": "single"
+      "quoteStyle": "single",
+      "semicolons": "always"
     }
   },
   "assist": {
@@ -50,5 +63,17 @@
         "organizeImports": "on"
       }
     }
-  }
+  },
+  "overrides": [
+    {
+      "includes": ["components/layout/navbar/mobile-menu.tsx"],
+      "linter": {
+        "rules": {
+          "correctness": {
+            "useExhaustiveDependencies": "off"
+          }
+        }
+      }
+    }
+  ]
 }

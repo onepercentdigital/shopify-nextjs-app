@@ -1,4 +1,4 @@
-import { SortFilterItem } from 'lib/constants';
+import type { SortFilterItem } from 'lib/constants';
 import { Suspense } from 'react';
 import FilterItemDropdown from './dropdown';
 import { FilterItem } from './item';
@@ -10,17 +10,14 @@ function FilterItemList({ list }: { list: ListItem[] }) {
   return (
     <>
       {list.map((item: ListItem) => {
-        // Removed `i` from map arguments
         // Derive a stable key from the item properties
         let key: string;
         if ('path' in item) {
           key = item.path; // item is PathFilterItem
         } else {
-          // item must be SortFilterItem
           const sortItem = item as SortFilterItem;
           key = sortItem.slug ?? sortItem.title;
         }
-
         return <FilterItem key={key} item={item} />;
       })}
     </>

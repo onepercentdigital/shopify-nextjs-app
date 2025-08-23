@@ -5,7 +5,7 @@ import { WelcomeToast } from 'components/welcome-toast';
 import { GeistSans } from 'geist/font/sans';
 import { getCart } from 'lib/shopify';
 import { baseUrl } from 'lib/utils';
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { Toaster } from 'sonner';
 
 const { SITE_NAME } = process.env;
