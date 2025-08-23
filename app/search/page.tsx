@@ -8,16 +8,26 @@ export const metadata = {
   description: 'Search for products in the store.',
 };
 
-export default async function SearchPage(props: {
-  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
+export default async function SearchPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const searchParams = await props.searchParams;
-  const { sort, q: searchValue } = searchParams as { [key: string]: string };
+  // Await the searchParams promise
+  const searchParamsObj = await searchParams;
+
+  // Safely destructure with defaults
+  const { sort, q: searchValueRaw } = searchParamsObj || {};
+
+  // Ensure searchValue is a string or undefined
+  const searchValue =
+    typeof searchValueRaw === 'string' ? searchValueRaw : undefined;
+
   const { sortKey, reverse } =
     sorting.find((item) => item.slug === sort) || defaultSort;
 
   const products = await getProducts({ sortKey, reverse, query: searchValue });
-  const resultsText = products.length > 1 ? 'results' : 'result';
+  const resultsText = products.length === 1 ? 'result' : 'results';
 
   return (
     <>

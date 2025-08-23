@@ -5,7 +5,7 @@ import type { SortFilterItem } from 'lib/constants';
 import { createUrl } from 'lib/utils';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { useMemo } from 'react'; // Import useMemo
+import { useMemo } from 'react';
 import type { ListItem, PathFilterItem as PathFilterItemType } from '.';
 
 function PathFilterItemComponent({ item }: { item: PathFilterItemType }) {
@@ -13,17 +13,12 @@ function PathFilterItemComponent({ item }: { item: PathFilterItemType }) {
   const searchParams = useSearchParams();
   const active = pathname === item.path;
 
-  // Memoize the href generation for stability.
+  // Always calculate href, regardless of active state
   const href = useMemo(() => {
-    // If the item is active, it's rendered as a <p> tag, so no href is needed.
-    if (active) return '';
-
     const newParams = new URLSearchParams(searchParams.toString());
-    newParams.delete('q'); // Clears the 'q' (search query) parameter
-
-    // Assuming createUrl is a stable function reference from 'lib/utils'
+    newParams.delete('q');
     return createUrl(item.path, newParams);
-  }, [active, item.path, searchParams]); // Dependencies for memoization
+  }, [item.path, searchParams]);
 
   const commonProps = {
     className: clsx(
@@ -52,14 +47,9 @@ function SortFilterItemComponent({ item }: { item: SortFilterItem }) {
   const searchParams = useSearchParams();
   const active = searchParams.get('sort') === item.slug;
 
-  // Memoize the href generation for stability.
+  // Always calculate href, regardless of active state
   const href = useMemo(() => {
-    // If the item is active, it's rendered as a <p> tag, so no href is needed.
-    if (active) return '';
-
     const q = searchParams.get('q');
-    // Constructs new URLSearchParams based on 'q' and the sort slug.
-    // This correctly handles clearing the sort parameter if item.slug is empty.
     return createUrl(
       pathname,
       new URLSearchParams({
@@ -67,7 +57,7 @@ function SortFilterItemComponent({ item }: { item: SortFilterItem }) {
         ...(item.slug && item.slug.length && { sort: item.slug }),
       }),
     );
-  }, [active, pathname, searchParams, item.slug]); // Dependencies for memoization
+  }, [pathname, searchParams, item.slug]);
 
   const commonProps = {
     className: clsx('w-full hover:underline hover:underline-offset-4', {
@@ -92,7 +82,6 @@ function SortFilterItemComponent({ item }: { item: SortFilterItem }) {
 }
 
 export function FilterItem({ item }: { item: ListItem }) {
-  // PathFilterItemType is used here to match the type expected by PathFilterItemComponent
   return 'path' in item ? (
     <PathFilterItemComponent item={item as PathFilterItemType} />
   ) : (
