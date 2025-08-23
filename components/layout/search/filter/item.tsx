@@ -12,23 +12,27 @@ function PathFilterItemComponent({ item }: { item: PathFilterItem }) {
   const searchParams = useSearchParams();
   const active = pathname === item.path;
   const newParams = new URLSearchParams(searchParams.toString());
-  const DynamicTag = active ? 'p' : Link;
 
   newParams.delete('q');
 
+  const commonProps = {
+    className: clsx(
+      'w-full text-sm underline-offset-4 hover:underline dark:hover:text-neutral-100',
+      {
+        'underline underline-offset-4': active,
+      },
+    ),
+  };
+
   return (
     <li className="mt-2 flex text-black dark:text-white" key={item.title}>
-      <DynamicTag
-        href={createUrl(item.path, newParams)}
-        className={clsx(
-          'w-full text-sm underline-offset-4 hover:underline dark:hover:text-neutral-100',
-          {
-            'underline underline-offset-4': active,
-          },
-        )}
-      >
-        {item.title}
-      </DynamicTag>
+      {active ? (
+        <p {...commonProps}>{item.title}</p>
+      ) : (
+        <Link href={createUrl(item.path, newParams)} {...commonProps}>
+          {item.title}
+        </Link>
+      )}
     </li>
   );
 }
@@ -45,22 +49,25 @@ function SortFilterItemComponent({ item }: { item: SortFilterItem }) {
       ...(item.slug && item.slug.length && { sort: item.slug }),
     }),
   );
-  const DynamicTag = active ? 'p' : Link;
+
+  const commonProps = {
+    className: clsx('w-full hover:underline hover:underline-offset-4', {
+      'underline underline-offset-4': active,
+    }),
+  };
 
   return (
     <li
       className="mt-2 flex text-sm text-black dark:text-white"
       key={item.title}
     >
-      <DynamicTag
-        prefetch={!active ? false : undefined}
-        href={href}
-        className={clsx('w-full hover:underline hover:underline-offset-4', {
-          'underline underline-offset-4': active,
-        })}
-      >
-        {item.title}
-      </DynamicTag>
+      {active ? (
+        <p {...commonProps}>{item.title}</p>
+      ) : (
+        <Link href={href} prefetch={false} {...commonProps}>
+          {item.title}
+        </Link>
+      )}
     </li>
   );
 }

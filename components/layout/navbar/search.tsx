@@ -1,33 +1,31 @@
 'use client';
 
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
-import { useRouter, useSearchParams } from 'next/navigation'; // Import useRouter
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 export default function Search() {
-  const router = useRouter(); // Initialize useRouter
+  const router = useRouter();
   const searchParams = useSearchParams();
+  const [inputValue, setInputValue] = useState(searchParams.get('q') || '');
+
+  useEffect(() => {
+    // Syncs the input value with the URL's 'q' parameter
+    setInputValue(searchParams.get('q') || '');
+  }, [searchParams]);
 
   function onSubmit(event: React.FormEvent<HTMLFormElement>) {
-    // Add onSubmit handler
-    event.preventDefault(); // Prevent full page reload
+    event.preventDefault();
 
-    const formData = new FormData(event.currentTarget);
-    const searchQuery = formData.get('q');
+    const newParams = new URLSearchParams(searchParams.toString());
+    newParams.set('q', inputValue);
 
-    if (searchQuery) {
-      // Create a new URLSearchParams object from the current ones
-      const newSearchParams = new URLSearchParams(searchParams.toString());
-      newSearchParams.set('q', searchQuery.toString()); // Set the new search query
-
-      // Push to the new search URL, triggering client-side navigation
-      router.push(`/search?${newSearchParams.toString()}`);
-    }
+    router.push(`/search?${newParams.toString()}`);
   }
 
   return (
     <form
-      onSubmit={onSubmit} // Attach onSubmit handler
-      // Remove action attribute to prevent default browser form submission
+      onSubmit={onSubmit}
       className="w-max-[550px] relative w-full lg:w-80 xl:w-full"
     >
       <input
@@ -35,8 +33,9 @@ export default function Search() {
         name="q"
         placeholder="Search for products..."
         autoComplete="off"
-        defaultValue={searchParams?.get('q') || ''}
-        className="text-md w-full rounded-lg border bg-white px-4 py-2 text-black placeholder:text-neutral-500 md:text-sm dark:border-neutral-800 dark:bg-transparent dark:text-white dark:placeholder:text-neutral-400"
+        value={inputValue}
+        onChange={(e) => setInputValue(e.target.value)}
+        className="h-11 w-full rounded-lg border bg-white px-4 text-base text-black placeholder:text-neutral-500 md:text-sm dark:border-neutral-800 dark:bg-transparent dark:text-white dark:placeholder:text-neutral-400"
       />
       <div className="pointer-events-none absolute top-0 right-0 mr-3 flex h-full items-center">
         <MagnifyingGlassIcon className="h-4" />
@@ -45,13 +44,12 @@ export default function Search() {
   );
 }
 
-// SearchSkeleton remains unchanged
 export function SearchSkeleton() {
   return (
     <form className="w-max-[550px] relative w-full lg:w-80 xl:w-full">
       <input
         placeholder="Search for products..."
-        className="w-full rounded-lg border bg-white px-4 py-2 text-sm text-black placeholder:text-neutral-500 dark:border-neutral-800 dark:bg-transparent dark:text-white dark:placeholder:text-neutral-400"
+        className="h-11 w-full rounded-lg border bg-white px-4 text-base text-black placeholder:text-neutral-500 md:text-sm dark:border-neutral-800 dark:bg-transparent dark:text-white dark:placeholder:text-neutral-400"
       />
       <div className="absolute top-0 right-0 mr-3 flex h-full items-center">
         <MagnifyingGlassIcon className="h-4" />
