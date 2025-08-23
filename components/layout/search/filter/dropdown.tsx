@@ -13,20 +13,26 @@ export default function FilterItemDropdown({ list }: { list: ListItem[] }) {
   const [openSelect, setOpenSelect] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
+  // Derives the active title. Memoized to only re-run when dependencies change.
+  // Dependencies are pathname, searchParams (for sorting), and the list itself.
   const activeTitle = useMemo(() => {
     const activeItem = list.find((listItem) => {
+      // Check for path-based items (collections)
       if ('path' in listItem) {
         return pathname === listItem.path;
       }
+      // Check for slug-based items (sorting)
       if ('slug' in listItem) {
         return searchParams.get('sort') === listItem.slug;
       }
       return false;
     });
 
+    // Fallback to the title of the first item if no active item is found.
     return activeItem?.title ?? list[0]?.title;
   }, [pathname, list, searchParams]);
 
+  // Handles clicking outside the dropdown to close it.
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (ref.current && !ref.current.contains(event.target as Node)) {
@@ -38,6 +44,7 @@ export default function FilterItemDropdown({ list }: { list: ListItem[] }) {
     return () => window.removeEventListener('click', handleClickOutside);
   }, []);
 
+  // Handles keyboard events for accessibility, e.g., closing with Escape key.
   const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
     if (event.key === 'Escape') {
       setOpenSelect(false);
@@ -58,8 +65,11 @@ export default function FilterItemDropdown({ list }: { list: ListItem[] }) {
       </button>
       {openSelect && (
         <div
+          // Added role="menu" for accessibility to treat this div as an interactive menu.
           role="menu"
+          // Closes the dropdown when an item inside is clicked.
           onClick={() => setOpenSelect(false)}
+          // Handles keyboard navigation within the menu.
           onKeyDown={handleKeyDown}
           className="absolute z-40 w-full rounded-b-md bg-white p-4 shadow-md dark:bg-black"
         >

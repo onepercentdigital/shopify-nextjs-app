@@ -5,7 +5,21 @@ import FilterList from './filter';
 
 async function CollectionList() {
   const collections = await getCollections();
-  return <FilterList list={collections} title="Collections" />;
+
+  // 1. Sanitize: Remove any collection from Shopify that has the root '/search' path.
+  // This prevents duplicate key errors and visual duplicates.
+  const collectionsWithoutRoot = collections.filter(
+    (collection) => collection.path !== '/search',
+  );
+
+  // 2. Prepare: Prepend a placeholder "All" item. Its path is a simple placeholder
+  // because the client components will dynamically create the real, query-aware link.
+  const finalList = [
+    { title: 'All', path: '/search' },
+    ...collectionsWithoutRoot,
+  ];
+
+  return <FilterList list={finalList} title="Collections" />;
 }
 
 const skeleton = 'mb-3 h-4 w-5/6 animate-pulse rounded-sm';

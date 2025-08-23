@@ -8,19 +8,18 @@ export type PathFilterItem = { title: string; path: string };
 
 function FilterItemList({ list }: { list: ListItem[] }) {
   return (
-    <>
+    <ul className="hidden md:block">
       {list.map((item: ListItem) => {
-        // Derive a stable key from the item properties
         let key: string;
         if ('path' in item) {
-          key = item.path; // item is PathFilterItem
+          key = item.path;
         } else {
           const sortItem = item as SortFilterItem;
           key = sortItem.slug ?? sortItem.title;
         }
         return <FilterItem key={key} item={item} />;
       })}
-    </>
+    </ul>
   );
 }
 
@@ -32,24 +31,20 @@ export default function FilterList({
   title?: string;
 }) {
   return (
-    <>
-      <nav>
-        {title ? (
-          <h3 className="hidden text-xs text-neutral-500 md:block dark:text-neutral-400">
-            {title}
-          </h3>
-        ) : null}
-        <ul className="hidden md:block">
-          <Suspense fallback={null}>
-            <FilterItemList list={list} />
-          </Suspense>
-        </ul>
-        <ul className="md:hidden">
-          <Suspense fallback={null}>
-            <FilterItemDropdown list={list} />
-          </Suspense>
-        </ul>
-      </nav>
-    </>
+    <nav>
+      {title ? (
+        <h3 className="hidden text-xs text-neutral-500 md:block dark:text-neutral-400">
+          {title}
+        </h3>
+      ) : null}
+      <Suspense fallback={null}>
+        {/* Desktop view: a list of links */}
+        <FilterItemList list={list} />
+        {/* Mobile view: a dropdown */}
+        <div className="md:hidden">
+          <FilterItemDropdown list={list} />
+        </div>
+      </Suspense>
+    </nav>
   );
 }
