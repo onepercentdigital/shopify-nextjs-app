@@ -102,7 +102,7 @@ export default function CartModal() {
                           b.merchandise.product.title,
                         ),
                       )
-                      .map((item, i) => {
+                      .map((item) => {
                         const merchandiseSearchParams =
                           {} as MerchandiseSearchParams;
 
