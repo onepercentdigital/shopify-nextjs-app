@@ -1,25 +1,32 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.2.0/schema.json",
+  "$schema": "https://biomejs.dev/schemas/latest/schema.json",
   "vcs": {
     "enabled": true,
     "clientKind": "git",
     "useIgnoreFile": true
   },
   "files": {
-    "includes": [
-      "**/*.{js,jsx,ts,tsx,json,jsonc,md,mdx,mjs,cjs}",
-      "!node_modules",
-      "!.next",
-      "!dist",
-      "!**/*.css"
-    ],
     "ignoreUnknown": true
   },
   "formatter": {
     "enabled": true,
-    "indentStyle": "space",
+    "lineWidth": 80,
     "indentWidth": 2,
-    "lineWidth": 80
+    "indentStyle": "space"
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single",
+      "semicolons": "always",
+      "trailingCommas": "all",
+      "jsxQuoteStyle": "double",
+      "arrowParentheses": "always"
+    }
+  },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
+    }
   },
   "linter": {
     "enabled": true,
@@ -38,6 +45,16 @@
         "noUnusedVariables": "warn",
         "noUnusedFunctionParameters": "warn"
       },
+      "nursery": {
+        "useSortedClasses": {
+          "level": "warn",
+          "fix": "unsafe",
+          "options": {
+            "attributes": ["classList"],
+            "functions": ["clsx", "cva", "cn", "tw"]
+          }
+        }
+      },
       "a11y": {
         "useButtonType": "warn",
         "noSvgWithoutTitle": "warn",
@@ -48,12 +65,6 @@
       "security": {
         "noDangerouslySetInnerHtml": "warn"
       }
-    }
-  },
-  "javascript": {
-    "formatter": {
-      "quoteStyle": "single",
-      "semicolons": "always"
     }
   },
   "assist": {
