@@ -9,23 +9,23 @@ This is a high-performance, server-rendered Next.js 15 App Router ecommerce appl
 ### Core Framework
 - **Next.js 15.4.2-canary.47** - App Router with experimental features enabled
 - **React 19.1.1** - Latest React with Server Components
-- **TypeScript 5.9.2** - Type-safe development
+- **TypeScript 5.9.3** - Type-safe development
+- **Bun** - Fast JavaScript runtime and package manager
 
 ### Styling & UI
-- **Tailwind CSS 4.1.12** - Utility-first CSS framework
-- **@tailwindcss/typography** - Beautiful typographic defaults
-- **@tailwindcss/container-queries** - Container query support
-- **Geist Font** - Vercel's typeface
-- **clsx** - Utility for constructing className strings
+- **Tailwind CSS 4.1.16** - Utility-first CSS framework
+- **@tailwindcss/typography 0.5.19** - Beautiful typographic defaults
+- **@tailwindcss/container-queries 0.1.1** - Container query support
+- **Geist Font 1.5.1** - Vercel's typeface
+- **clsx 2.1.1** - Utility for constructing className strings
 
 ### UI Components
-- **@headlessui/react** - Unstyled, accessible UI components
-- **@heroicons/react** - Beautiful hand-crafted SVG icons
-- **Sonner** - Toast notifications
+- **@headlessui/react 2.2.9** - Unstyled, accessible UI components
+- **@heroicons/react 2.2.0** - Beautiful hand-crafted SVG icons
+- **Sonner 2.0.7** - Toast notifications
 
 ### Development Tools
-- **Biome 2.2.0** - Fast formatter and linter (replaces ESLint + Prettier)
-- **Prettier 3.6.2** - Code formatter with Tailwind plugin
+- **Biome 2.3.2** - Fast formatter and linter (replaces ESLint + Prettier)
 
 ### Shopify Integration
 - **Shopify Storefront API** - GraphQL API for headless commerce
@@ -42,9 +42,13 @@ shopify-nextjs-app/
 │   ├── search/                   # Search and collection pages
 │   ├── layout.tsx                # Root layout
 │   ├── page.tsx                  # Homepage
+│   ├── globals.css               # Global styles
 │   └── error.tsx                 # Error boundary
 ├── components/                   # React components
 │   ├── cart/                     # Shopping cart components
+│   │   ├── actions.ts            # Server actions for cart operations
+│   │   ├── cart-context.tsx     # Client-side cart state
+│   │   └── modal.tsx            # Cart UI modal
 │   ├── grid/                     # Product grid layouts
 │   ├── icons/                    # Icon components
 │   ├── layout/                   # Layout components (navbar, footer, search)
@@ -58,8 +62,10 @@ shopify-nextjs-app/
 │   │   └── index.ts              # Main Shopify API functions
 │   ├── constants.ts              # App constants
 │   └── utils.ts                  # Utility functions
-└── fonts/                        # Custom fonts
-
+├── fonts/                        # Custom fonts
+├── tsconfig.json                 # TypeScript configuration
+├── biome.json                    # Biome configuration
+└── next.config.ts                # Next.js configuration
 ```
 
 ## Key Features
@@ -78,7 +84,7 @@ shopify-nextjs-app/
 - **Inline CSS** - Faster initial page loads
 - **Image Optimization** - AVIF and WebP formats
 - **Cache Management** - Smart revalidation with tags
-- **Turbopack** - Fast development mode bundler
+- **Turbopack** - Fast development mode bundler (via `--turbo` flag)
 
 ### 3. Shopping Experience
 - Real-time cart updates with `useOptimistic`
@@ -96,7 +102,7 @@ shopify-nextjs-app/
 
 ## Environment Variables
 
-Required environment variables (see `.env.example`):
+Required environment variables (see `env.example`):
 
 ```bash
 SHOPIFY_STORE_DOMAIN=your-store.myshopify.com
@@ -110,16 +116,18 @@ SITE_NAME=Your Site Name
 
 ```bash
 # Development
-bun dev                 # Start dev server with Turbopack
-bun start              # Start production server
-bun build              # Build for production
+bun dev                    # Start dev server with Bun runtime
+bun start                  # Start production server
+bun run build              # Build for production
 
 # Code Quality
-bun run lint           # Check code with Biome
-bun run lint-fix       # Fix code issues with Biome
-bun run format         # Check formatting with Biome
-bun run format-fix     # Fix formatting with Biome
-bun run type          # TypeScript type checking
+bun run check              # Check code with Biome
+bun run check:all          # Run both type checking and Biome checks
+bun run lint               # Lint code with Biome
+bun run lint-fix           # Fix code issues with Biome (safe fixes)
+bun run lint-fix-unsafe    # Fix code issues with Biome (including unsafe fixes)
+bun run format             # Format code with Biome
+bun run type               # TypeScript type checking
 ```
 
 ## Shopify API Integration
@@ -128,10 +136,10 @@ bun run type          # TypeScript type checking
 
 **Cart Operations:**
 - `createCart()` - Create a new shopping cart
-- `getCart()` - Retrieve current cart
-- `addToCart(lines)` - Add items to cart
-- `removeFromCart(lineIds)` - Remove items from cart
-- `updateCart(lines)` - Update cart item quantities
+- `getCart()` - Retrieve current cart (returns undefined if no cart exists)
+- `addToCart(lines)` - Add items to cart (requires cartId cookie)
+- `removeFromCart(lineIds)` - Remove items from cart (requires cartId cookie)
+- `updateCart(lines)` - Update cart item quantities (requires cartId cookie)
 
 **Product Operations:**
 - `getProduct(handle)` - Get single product
@@ -151,6 +159,20 @@ bun run type          # TypeScript type checking
 **Cache Management:**
 - `revalidate(req)` - Webhook handler for cache invalidation
 
+### Error Handling in Cart Operations
+
+The cart functions (`addToCart`, `removeFromCart`, `updateCart`) throw errors if the cartId cookie is not found:
+
+```typescript
+const cartId = (await cookies()).get('cartId')?.value;
+
+if (!cartId) {
+  throw new Error('Cart ID not found in cookies');
+}
+```
+
+Server actions in `components/cart/actions.ts` handle these errors and return user-friendly error messages.
+
 ### Cache Strategy
 
 The app uses Next.js 15's new caching APIs:
@@ -158,6 +180,22 @@ The app uses Next.js 15's new caching APIs:
 - `cacheTag()` - Tag cache entries for targeted invalidation
 - `cacheLife('days')` - Set cache duration
 - Tags: `collections`, `products`, `cart`
+
+## TypeScript Configuration
+
+**Modern Configuration:**
+- Target: `ESNext`
+- Module: `Preserve` (optimized for Next.js 15)
+- Module Resolution: `bundler` (optimized for Bun + Next.js)
+- JSX: `preserve` (required by Next.js)
+- Strict mode enabled with additional safety checks:
+  - `noUncheckedIndexedAccess`
+  - `noImplicitOverride`
+  - `noFallthroughCasesInSwitch`
+  - `noUnusedLocals`
+  - `noUnusedParameters`
+
+**Note:** Generated Next.js files (`.next/types/validator.ts`) are excluded from strict unused variable checks.
 
 ## Next.js Configuration
 
@@ -172,12 +210,26 @@ The app uses Next.js 15's new caching APIs:
 
 ## Code Style
 
-The project uses **Biome** for both linting and formatting (replaced ESLint and Prettier):
-- Semi-colons: enabled
-- Single quotes: enabled
-- Tab width: 2 spaces
+The project uses **Biome** for both linting and formatting:
+
+**Formatter Settings:**
+- Line width: 80 characters
+- Indent: 2 spaces
+- Style: space indentation
+
+**JavaScript/TypeScript Settings:**
+- Quote style: single quotes
+- Semicolons: always
 - Trailing commas: all
-- Print width: 80 characters
+- JSX quotes: double
+- Arrow parentheses: always
+
+**Linting Rules:**
+- Recommended rules enabled
+- Import type usage warnings
+- Accessibility checks
+- Sorted Tailwind classes (via `useSortedClasses`)
+- Security checks (dangerouslySetInnerHtml warnings)
 
 ## Git Workflow
 
@@ -185,6 +237,9 @@ The project uses **Biome** for both linting and formatting (replaced ESLint and 
 **Current Branch:** `update/test`
 
 **Recent Changes:**
+- TypeScript configuration modernized to ESNext with bundler resolution
+- Fixed non-null assertion errors in cart functions
+- Removed Safari lazy loading workaround (fixed in Safari 16.4+)
 - Search and item state fixes
 - Mobile menu improvements
 - Client-side navigation for search
@@ -197,6 +252,34 @@ The project uses **Biome** for both linting and formatting (replaced ESLint and 
 - Collections starting with `hidden-` are excluded from search
 - Automatic "All" collection for browsing all products
 
+## Important Notes & Gotchas
+
+### Server Action Architecture
+When working with Next.js 15 experimental features (PPR, useCache), keep server action architecture **flat and simple**:
+
+✅ **Good Pattern:**
+```typescript
+export async function addItem() {
+  await addToCart([...]); // Single level of server API calls
+}
+```
+
+❌ **Avoid:**
+```typescript
+export async function addItem() {
+  await ensureCart();     // Nested server-only API calls
+  await addToCart([...]);  // Creates complex dependency chain
+}
+```
+
+**Why:** Deep nesting of server-only API calls (like `cookies()`) in Server Actions can cause webpack module resolution errors with Next.js 15's experimental features.
+
+### Cart Operation Flow
+1. Server actions in `components/cart/actions.ts` check if cart exists via `getCart()`
+2. If no cart exists, appropriate error messages are returned
+3. Cart operations (`addToCart`, `removeFromCart`, `updateCart`) require a valid cartId cookie
+4. These functions throw errors if cartId is missing, which are caught by server actions
+
 ## Testing Considerations
 
 When working on this project:
@@ -205,7 +288,9 @@ When working on this project:
 3. Check image loading and optimization
 4. Test search and filter functionality
 5. Validate TypeScript types with `bun run type`
-6. Ensure Biome checks pass before committing
+6. Ensure Biome checks pass with `bun run check:all`
+7. Test with empty cart state (no cartId cookie)
+8. Test cart operations after clearing cookies
 
 ## Deployment
 
@@ -214,6 +299,7 @@ Optimized for deployment on Vercel:
 - Automatic cache revalidation via webhooks
 - Edge-ready with React Server Components
 - Optimized for CDN delivery
+- Uses Bun runtime for faster builds
 
 ## Additional Resources
 
@@ -221,3 +307,5 @@ Optimized for deployment on Vercel:
 - [Shopify Storefront API Docs](https://shopify.dev/docs/api/storefront)
 - [Next.js 15 Documentation](https://nextjs.org/docs)
 - [Vercel Shopify Integration Guide](https://vercel.com/docs/integrations/ecommerce/shopify)
+- [Biome Documentation](https://biomejs.dev/)
+- [Bun Documentation](https://bun.sh/docs)

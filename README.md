@@ -6,9 +6,21 @@ A high-performance, server-rendered Next.js App Router ecommerce application.
 
 This template uses React Server Components, Server Actions, `Suspense`, `useOptimistic`, and more.
 
+> **Note:** For detailed technical documentation, architecture notes, and development guidelines, see [CLAUDE.md](./CLAUDE.md).
+
 <h3 id="v1-note"></h3>
 
 > Note: Looking for Next.js Commerce v1? View the [code](https://github.com/vercel/commerce/tree/v1), [demo](https://commerce-v1.vercel.store), and [release notes](https://github.com/vercel/commerce/releases/tag/v1).
+
+## Tech Stack
+
+- **Next.js 15** - App Router with experimental features (PPR, inline CSS, useCache)
+- **React 19** - Server Components & Server Actions
+- **TypeScript 5.9** - Full type safety
+- **Tailwind CSS 4** - Utility-first styling
+- **Biome** - Fast linting and formatting
+- **Bun** - Fast JavaScript runtime and package manager
+- **Shopify Storefront API** - Headless commerce integration
 
 ## Providers
 
@@ -43,22 +55,40 @@ Integrations enable upgraded or additional functionality for Next.js Commerce
 - [React Bricks](https://github.com/ReactBricks/nextjs-commerce-rb) ([Demo](https://nextjs-commerce.reactbricks.com/))
   - Edit pages, product details, and footer content visually using [React Bricks](https://www.reactbricks.com) visual headless CMS.
 
-## Running locally
+## Running Locally
 
-You will need to use the environment variables [defined in `.env.example`](.env.example) to run Next.js Commerce. It's recommended you use [Vercel Environment Variables](https://vercel.com/docs/concepts/projects/environment-variables) for this, but a `.env` file is all that is necessary.
+You will need to use the environment variables [defined in `env.example`](env.example) to run Next.js Commerce. It's recommended you use [Vercel Environment Variables](https://vercel.com/docs/concepts/projects/environment-variables) for this, but a `.env.local` file is all that is necessary.
 
 > Note: You should not commit your `.env` file or it will expose secrets that will allow others to control your Shopify store.
 
-1. Install Vercel CLI: `npm i -g vercel`
-2. Link local instance with Vercel and GitHub accounts (creates `.vercel` directory): `vercel link`
-3. Download your environment variables: `vercel env pull`
+### Quick Start
 
-```bash
-pnpm install
-pnpm dev
-```
+1. Install Bun (if not already installed): `curl -fsSL https://bun.sh/install | bash`
+2. Install dependencies: `bun install`
+3. Set up environment variables (see below)
+4. Run development server: `bun dev`
 
 Your app should now be running on [localhost:3000](http://localhost:3000/).
+
+### Environment Setup
+
+**Option 1: Using Vercel CLI (Recommended)**
+
+1. Install Vercel CLI: `npm i -g vercel`
+2. Link local instance with Vercel and GitHub accounts: `vercel link`
+3. Download your environment variables: `vercel env pull`
+
+**Option 2: Manual Setup**
+
+1. Copy `env.example` to `.env.local`
+2. Fill in your Shopify credentials:
+   ```bash
+   SHOPIFY_STORE_DOMAIN=your-store.myshopify.com
+   SHOPIFY_STOREFRONT_ACCESS_TOKEN=your-storefront-access-token
+   SHOPIFY_REVALIDATION_SECRET=your-secret-key
+   COMPANY_NAME=Your Company Name
+   SITE_NAME=Your Site Name
+   ```
 
 <details>
   <summary>Expand if you work at Vercel and want to run locally and / or contribute</summary>
@@ -67,9 +97,62 @@ Your app should now be running on [localhost:3000](http://localhost:3000/).
 1. Select the `Vercel Solutions` scope.
 1. Connect to the existing `commerce-shopify` project.
 1. Run `vc env pull` to get environment variables.
-1. Run `pnpm dev` to ensure everything is working correctly.
+1. Run `bun dev` to ensure everything is working correctly.
 </details>
+
+## Available Scripts
+
+```bash
+# Development
+bun dev                    # Start dev server
+bun start                  # Start production server
+bun run build              # Build for production
+
+# Code Quality
+bun run check              # Run Biome checks
+bun run check:all          # Run type checking + Biome checks
+bun run lint               # Lint with Biome
+bun run lint-fix           # Fix linting issues (safe)
+bun run lint-fix-unsafe    # Fix linting issues (including unsafe)
+bun run format             # Format code with Biome
+bun run type               # TypeScript type checking
+```
+
+## Project Structure
+
+```
+shopify-nextjs-app/
+├── app/                    # Next.js App Router pages
+│   ├── [page]/            # Dynamic pages
+│   ├── product/           # Product pages
+│   ├── search/            # Search & collections
+│   └── layout.tsx         # Root layout
+├── components/            # React components
+│   ├── cart/              # Shopping cart
+│   ├── layout/            # Navigation & footer
+│   └── product/           # Product displays
+├── lib/                   # Utilities & Shopify integration
+│   └── shopify/           # Shopify API layer
+└── fonts/                 # Custom fonts
+```
+
+## Key Features
+
+- **Cart Management** - Add, update, remove items with optimistic updates
+- **Product Browsing** - Collections, filtering, sorting, search
+- **Image Optimization** - Automatic AVIF/WebP conversion
+- **Partial Prerendering** - Faster page loads with Next.js 15 PPR
+- **Server Components** - Reduced client-side JavaScript
+- **Cache Management** - Smart revalidation with Shopify webhooks
 
 ## Vercel, Next.js Commerce, and Shopify Integration Guide
 
 You can use this comprehensive [integration guide](https://vercel.com/docs/integrations/ecommerce/shopify) with step-by-step instructions on how to configure Shopify as a headless CMS using Next.js Commerce as your headless Shopify storefront on Vercel.
+
+## Contributing
+
+See [CLAUDE.md](./CLAUDE.md) for detailed development guidelines, architecture notes, and best practices.
+
+## License
+
+MIT License - see LICENSE file for details
