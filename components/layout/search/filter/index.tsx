@@ -33,7 +33,7 @@ export default function FilterList({
   return (
     <nav>
       {title ? (
-        <h3 className="hidden text-xs text-neutral-500 md:block dark:text-neutral-400">
+        <h3 className="hidden text-neutral-500 text-xs md:block dark:text-neutral-400">
           {title}
         </h3>
       ) : null}

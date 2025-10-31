@@ -8,7 +8,7 @@ This is a high-performance, server-rendered Next.js 15 App Router ecommerce appl
 
 ### Core Framework
 - **Next.js 15.6.0-canary.57** - App Router with experimental features enabled
-- **React 19.1.1** - Latest React with Server Components
+- **React 19.2.0** - Latest React with Server Components
 - **TypeScript 5.9.3** - Type-safe development
 - **Bun** - Fast JavaScript runtime and package manager
 
@@ -238,7 +238,7 @@ The project uses **Biome** for both linting and formatting:
 ## Git Workflow
 
 **Main Branch:** `main`
-**Current Branch:** `update/test`
+**Current Branch:** `upgrade/nextjs16`
 
 **Recent Changes:**
 - **Next.js 15.6 Upgrade** - Migrated from 15.4 to 15.6 canary

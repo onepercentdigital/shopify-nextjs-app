@@ -14,11 +14,11 @@ This template uses React Server Components, Server Actions, `Suspense`, `useOpti
 
 ## Tech Stack
 
-- **Next.js 15.6** - App Router with experimental features (Cache Components, inline CSS, useCache)
-- **React 19** - Server Components & Server Actions
-- **TypeScript 5.9** - Full type safety
-- **Tailwind CSS 4** - Utility-first styling
-- **Biome** - Fast linting and formatting
+- **Next.js 15.6.0-canary.57** - App Router with experimental features (Cache Components, inline CSS, useCache)
+- **React 19.2.0** - Server Components & Server Actions
+- **TypeScript 5.9.3** - Full type safety
+- **Tailwind CSS 4.1.16** - Utility-first styling
+- **Biome 2.3.2** - Fast linting and formatting
 - **Bun** - Fast JavaScript runtime and package manager
 - **Shopify Storefront API** - Headless commerce integration
 
@@ -140,11 +140,12 @@ shopify-nextjs-app/
 
 - **Cart Management** - Add, update, remove items with optimistic updates and instant UI feedback
 - **Product Browsing** - Collections, filtering, sorting, search
-- **Image Optimization** - Automatic AVIF/WebP conversion
-- **Cache Components** - Faster page loads with Next.js 15.6 Cache Components (Partial Prerendering)
-- **Server Components** - Reduced client-side JavaScript
-- **Cache Management** - Smart revalidation with Shopify webhooks and path revalidation
+- **Image Optimization** - Automatic AVIF/WebP conversion with Shopify CDN
+- **Partial Prerendering** - Next.js 15.6 Cache Components for optimal static/dynamic rendering
+- **Server Components** - Reduced client-side JavaScript (15 Client Components only)
+- **Cache Management** - Smart revalidation with tagged cache entries and path revalidation
 - **Suspense Boundaries** - Optimized data loading with proper React Suspense boundaries
+- **Type Safety** - Full TypeScript coverage with strict mode enabled
 
 ## Vercel, Next.js Commerce, and Shopify Integration Guide
 
@@ -174,9 +175,9 @@ This application leverages Next.js 15.6's advanced caching features to provide t
 - ✅ Server actions maintain data consistency
 - ✅ Minimal client-side JavaScript
 
-### Recent Updates (Next.js 15.6)
+### Recent Updates (Next.js 15.6.0-canary.57)
 
-The application has been updated to Next.js 15.6 with the following changes:
+The application has been updated to Next.js 15.6 canary with the following changes:
 
 - **Cache Components**: Replaced `experimental.ppr` with `experimental.cacheComponents` for Partial Prerendering
 - **Suspense Boundaries**: Added proper boundaries for all components using React's `use()` hook and async data fetching:
@@ -184,14 +185,17 @@ The application has been updated to Next.js 15.6 with the following changes:
   - Created `CartProviderWrapper` to separate static shell from dynamic cart data
   - Enables successful static page generation during build
 - **Revalidation Strategy**: Enhanced cart actions with both tag and path revalidation for instant UI updates
-- **Client Components**: Isolated dynamic behavior into small client components:
+- **Client Components**: Isolated dynamic behavior into 15 small Client Components:
+  - `Price` - Currency formatting without hydration issues
   - `CopyrightYear` - Dynamic copyright year display
   - `FormattedDate` - Locale-aware date formatting  
-  - `Price` - Currency formatting without hydration issues
-- **API Updates**: Updated `revalidateTag()` calls to use the new two-argument API
+  - Cart components (`modal.tsx`, `add-to-cart.tsx`, `delete-item-button.tsx`, etc.)
+  - Navigation components (`search.tsx`, `mobile-menu.tsx`)
+- **API Updates**: Updated `revalidateTag()` calls to use the new two-argument API (`revalidateTag(tag, 'max')`)
 - **Hydration Fixes**: Resolved hydration mismatches by moving locale-dependent formatting (`Intl.NumberFormat`, `Intl.DateTimeFormat`) to Client Components
 - **Dynamic Data Access**: Added `await headers()` before accessing `params`/`searchParams` in all routes and metadata functions
 - **Build Fixes**: Resolved prerendering errors by properly structuring async data fetching in layouts
+- **Code Quality**: Migrated from ESLint/Prettier to Biome for faster linting and formatting
 
 See [CLAUDE.md](./CLAUDE.md) for detailed technical documentation on these changes.
 

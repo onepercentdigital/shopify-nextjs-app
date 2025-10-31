@@ -55,7 +55,7 @@ export default function FilterItemDropdown({ list }: { list: ListItem[] }) {
         type="button"
         onClick={() => setOpenSelect((s) => !s)}
         className={
-          'flex w-full items-center justify-between rounded-sm ' +
+          'flex w-full items-center justify-between rounded-sm' +
           'border border-black/30 px-4 py-2 text-sm dark:border-white/30'
         }
       >
