@@ -181,8 +181,13 @@ The application has been updated to Next.js 15.6 with the following changes:
 - **Cache Components**: Replaced `experimental.ppr` with `experimental.cacheComponents`
 - **Suspense Boundaries**: Added proper boundaries for components using React's `use()` hook
 - **Revalidation Strategy**: Enhanced cart actions with both tag and path revalidation
-- **Client Components**: Isolated dynamic behavior (like copyright year) into small client components
+- **Client Components**: Isolated dynamic behavior into small client components:
+  - `CopyrightYear` - Dynamic copyright year display
+  - `FormattedDate` - Locale-aware date formatting
+  - `Price` - Currency formatting without hydration issues
 - **API Updates**: Updated `revalidateTag()` calls to use the new two-argument API
+- **Hydration Fixes**: Resolved hydration mismatches by moving locale-dependent formatting (`Intl.NumberFormat`, `Intl.DateTimeFormat`) to Client Components
+- **Dynamic Data Access**: Added `await headers()` before accessing `params`/`searchParams` in all routes and metadata functions
 
 See [CLAUDE.md](./CLAUDE.md) for detailed technical documentation on these changes.
 

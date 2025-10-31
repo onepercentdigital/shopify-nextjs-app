@@ -9,6 +9,9 @@ import { notFound } from 'next/navigation';
 export async function generateMetadata(props: {
   params: Promise<{ collection: string }>;
 }): Promise<Metadata> {
+  // Access uncached data first (required for Next.js 15.6+)
+  await headers();
+
   const params = await props.params;
   const collection = await getCollection(params.collection);
 

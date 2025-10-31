@@ -261,7 +261,9 @@ The project uses **Biome** for both linting and formatting:
   - Maintains optimistic UI updates with server state synchronization
 - **Component Architecture**
   - Created `CopyrightYear` client component for dynamic year display
-  - Moved copyright logic from server to client to avoid prerendering issues
+  - Created `FormattedDate` client component for locale-dependent date formatting
+  - Converted `Price` component to client component to fix hydration mismatch
+  - Moved all locale-dependent formatting (Intl) to client components
 - TypeScript configuration modernized to ESNext with bundler resolution
 - Fixed non-null assertion errors in cart functions
 - Removed Safari lazy loading workaround (fixed in Safari 16.4+)
@@ -335,6 +337,18 @@ This ensures:
 3. Layout refetches fresh cart data after mutations
 4. Cart displays correctly without manual page refresh
 
+**Locale-Dependent Formatting:**
+All locale-dependent formatting must be in Client Components to avoid hydration mismatches:
+- `Intl.NumberFormat` - Used in `Price` component (Client Component)
+- `Intl.DateTimeFormat` - Used in `FormattedDate` component (Client Component)
+- `new Date().getFullYear()` - Used in `CopyrightYear` component (Client Component)
+
+**Why Client Components for Intl:**
+- Server and client may have different locale settings
+- Causes hydration mismatch: server renders one format, client expects another
+- Moving to Client Component ensures consistent rendering
+- Small performance impact (~3-4KB) for correct behavior
+
 ### Server Action Architecture
 When working with Next.js 15 experimental features (PPR, useCache), keep server action architecture **flat and simple**:
 
@@ -377,8 +391,16 @@ export async function addItem() {
 
 **Error: "Route used `new Date()` before accessing uncached data"**
 - **Cause**: Calling `new Date()` in Server Component before accessing dynamic data
-- **Solution**: Call `await headers()` before `new Date()`, or move to Client Component with Suspense
+- **Solution**: Call `await headers()` before `new Date()`, or move to Client Component
+- **Best Practice**: Move any dynamic time logic to small Client Components
 - **Files affected**: Product pages, search pages, footer components
+
+**Error: "Hydration failed because server rendered HTML didn't match client"**
+- **Cause**: Using `Intl.NumberFormat` or `Intl.DateTimeFormat` in Server Components
+- **Reason**: Server and client locales differ, causing different formatted output
+- **Solution**: Move all `Intl` formatting to Client Components
+- **Files affected**: `components/price.tsx`, `components/formatted-date.tsx`
+- **Note**: `suppressHydrationWarning` doesn't fix this in Next.js 15.6
 
 **Error: "Component accessed data without Suspense boundary"**
 - **Cause**: Component using `use()` hook not wrapped in Suspense
@@ -511,7 +533,29 @@ export async function addItem(...) {
 }
 ```
 
-### 6. Verify Build
+### 6. Fix Locale-Dependent Formatting
+
+Move all `Intl` usage to Client Components:
+
+```typescript
+// Before (Server Component - causes hydration mismatch)
+export default function Price({ amount }) {
+  return <p>{new Intl.NumberFormat(undefined, {...}).format(amount)}</p>;
+}
+
+// After (Client Component)
+'use client';
+export default function Price({ amount }) {
+  return <p>{new Intl.NumberFormat(undefined, {...}).format(amount)}</p>;
+}
+```
+
+**Components requiring 'use client' for Intl:**
+- Price formatting components
+- Date/time formatting components
+- Any component using `Intl.NumberFormat`, `Intl.DateTimeFormat`, etc.
+
+### 7. Verify Build
 
 ```bash
 bun run build
@@ -521,6 +565,43 @@ Check that:
 - Static routes are marked with `○` (static)
 - Dynamic routes are marked with `λ` (server)
 - No deprecation warnings in console
+- No hydration mismatch warnings
+
+## Client Components Reference
+
+This project uses **15 Client Components** to handle interactive features and locale-dependent formatting:
+
+**Cart & Commerce:**
+1. `cart/modal.tsx` - Shopping cart modal
+2. `cart/add-to-cart.tsx` - Add to cart button with form
+3. `cart/delete-item-button.tsx` - Remove item from cart
+4. `cart/edit-item-quantity-button.tsx` - Update item quantity
+5. `cart/cart-context.tsx` - Cart state management with `use()` hook
+
+**Navigation & Search:**
+6. `layout/navbar/search.tsx` - Search input with state
+7. `layout/navbar/mobile-menu.tsx` - Mobile navigation menu
+8. `layout/search/filter/item.tsx` - Filter checkbox item
+9. `layout/search/filter/dropdown.tsx` - Filter dropdown menu
+10. `layout/footer-menu.tsx` - Footer menu with state
+
+**Product:**
+11. `product/product-context.tsx` - Product state management
+
+**Formatting & Display (Locale-dependent):**
+12. `price.tsx` - Price formatting with `Intl.NumberFormat`
+13. `formatted-date.tsx` - Date formatting with `Intl.DateTimeFormat`
+14. `layout/copyright-year.tsx` - Dynamic copyright year
+
+**Other:**
+15. `welcome-toast.tsx` - Welcome toast notification
+
+**Why These Are Client Components:**
+- Use React hooks (`useState`, `useEffect`, etc.)
+- Handle browser events (`onClick`, `onChange`, etc.)
+- Access browser APIs (`window`, `document`)
+- Use `use()` hook for promises
+- Perform locale-dependent formatting (`Intl`)
 
 ## Additional Resources
 
@@ -528,6 +609,7 @@ Check that:
 - [Shopify Storefront API Docs](https://shopify.dev/docs/api/storefront)
 - [Next.js 15 Documentation](https://nextjs.org/docs)
 - [Next.js 15.6 Upgrade Guide](https://nextjs.org/docs/messages/next-prerender-missing-suspense)
+- [React Hydration Mismatch Docs](https://react.dev/link/hydration-mismatch)
 - [Vercel Shopify Integration Guide](https://vercel.com/docs/integrations/ecommerce/shopify)
 - [Biome Documentation](https://biomejs.dev/)
 - [Bun Documentation](https://bun.sh/docs)

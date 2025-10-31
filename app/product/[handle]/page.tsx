@@ -15,6 +15,9 @@ import { Suspense } from 'react';
 export async function generateMetadata(props: {
   params: Promise<{ handle: string }>;
 }): Promise<Metadata> {
+  // Access uncached data first (required for Next.js 15.6+)
+  await headers();
+
   const params = await props.params;
   const product = await getProduct(params.handle);
 

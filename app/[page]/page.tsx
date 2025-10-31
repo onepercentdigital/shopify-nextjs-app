@@ -1,3 +1,4 @@
+import FormattedDate from 'components/formatted-date';
 import Prose from 'components/prose';
 import { getPage } from 'lib/shopify';
 import type { Metadata } from 'next';
@@ -7,6 +8,9 @@ import { notFound } from 'next/navigation';
 export async function generateMetadata(props: {
   params: Promise<{ page: string }>;
 }): Promise<Metadata> {
+  // Access uncached data first (required for Next.js 15.6+)
+  await headers();
+
   const params = await props.params;
   const page = await getPage(params.page);
 
@@ -39,14 +43,8 @@ export default async function Page(props: {
       <h1 className="mb-8 text-5xl font-bold">{page.title}</h1>
       <Prose className="mb-8" html={page.body} />
       <p className="text-sm italic">
-        {`This document was last updated on ${new Intl.DateTimeFormat(
-          undefined,
-          {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-          },
-        ).format(new Date(page.updatedAt))}.`}
+        This document was last updated on{' '}
+        <FormattedDate date={page.updatedAt} />.
       </p>
     </>
   );
