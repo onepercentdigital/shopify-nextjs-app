@@ -178,16 +178,20 @@ This application leverages Next.js 15.6's advanced caching features to provide t
 
 The application has been updated to Next.js 15.6 with the following changes:
 
-- **Cache Components**: Replaced `experimental.ppr` with `experimental.cacheComponents`
-- **Suspense Boundaries**: Added proper boundaries for components using React's `use()` hook
-- **Revalidation Strategy**: Enhanced cart actions with both tag and path revalidation
+- **Cache Components**: Replaced `experimental.ppr` with `experimental.cacheComponents` for Partial Prerendering
+- **Suspense Boundaries**: Added proper boundaries for all components using React's `use()` hook and async data fetching:
+  - Wrapped `CartModal`, `AddToCart`, and `Footer` in Suspense
+  - Created `CartProviderWrapper` to separate static shell from dynamic cart data
+  - Enables successful static page generation during build
+- **Revalidation Strategy**: Enhanced cart actions with both tag and path revalidation for instant UI updates
 - **Client Components**: Isolated dynamic behavior into small client components:
   - `CopyrightYear` - Dynamic copyright year display
-  - `FormattedDate` - Locale-aware date formatting
+  - `FormattedDate` - Locale-aware date formatting  
   - `Price` - Currency formatting without hydration issues
 - **API Updates**: Updated `revalidateTag()` calls to use the new two-argument API
 - **Hydration Fixes**: Resolved hydration mismatches by moving locale-dependent formatting (`Intl.NumberFormat`, `Intl.DateTimeFormat`) to Client Components
 - **Dynamic Data Access**: Added `await headers()` before accessing `params`/`searchParams` in all routes and metadata functions
+- **Build Fixes**: Resolved prerendering errors by properly structuring async data fetching in layouts
 
 See [CLAUDE.md](./CLAUDE.md) for detailed technical documentation on these changes.
 

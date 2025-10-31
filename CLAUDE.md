@@ -250,6 +250,8 @@ The project uses **Biome** for both linting and formatting:
   - Wrapped `CartModal` in Suspense in Navbar
   - Wrapped `AddToCart` in Suspense in ProductDescription
   - Wrapped `CopyrightYear` in Suspense in Footer
+  - Wrapped `Footer` component in Suspense in all layouts and pages
+  - Created `CartProviderWrapper` to enable proper static/dynamic separation in root layout
 - **Dynamic Data Access Fixes**
   - Added `await headers()` in product pages (`/product/[handle]`)
   - Added `await headers()` in search pages (`/search/[collection]`)
@@ -369,6 +371,48 @@ export async function addItem() {
 
 **Why:** Deep nesting of server-only API calls (like `cookies()`) in Server Actions can cause webpack module resolution errors with Next.js 15's experimental features.
 
+### Cart Provider Architecture
+
+**Problem**: Calling `getCart()` directly in the root layout makes it dynamic, which prevents static page generation during build.
+
+**Solution**: Use a wrapper pattern with Suspense to separate static shell from dynamic cart data:
+
+```typescript
+// components/cart/cart-provider-wrapper.tsx
+import { CartProvider } from 'components/cart/cart-context';
+import { getCart } from 'lib/shopify';
+
+export async function CartProviderWrapper({ children }) {
+  const cart = getCart();
+  return <CartProvider cartPromise={cart}>{children}</CartProvider>;
+}
+
+// app/layout.tsx
+export default function RootLayout({ children }) {
+  return (
+    <html>
+      <body>
+        <Suspense fallback={null}>
+          <CartProviderWrapper>
+            <Navbar />
+            <main>{children}</main>
+          </CartProviderWrapper>
+        </Suspense>
+      </body>
+    </html>
+  );
+}
+```
+
+**Key Benefits:**
+- ✅ Root layout is synchronous (not async)
+- ✅ Static pages can be prerendered during build
+- ✅ Cart data streams in via Suspense boundary
+- ✅ Enables Partial Prerendering (PPR) with `cacheComponents`
+- ✅ Build succeeds with `◐ (Partial Prerender)` status
+
+**Without this pattern**: Build fails with "Component accessed data without Suspense boundary" error on static routes like `/[page]`.
+
 ### Cart Operation Flow
 1. **Optimistic Update**: Client immediately updates UI via `useOptimistic` hook
 2. **Server Action**: Executes cart mutation (add/remove/update)
@@ -403,9 +447,10 @@ export async function addItem() {
 - **Note**: `suppressHydrationWarning` doesn't fix this in Next.js 15.6
 
 **Error: "Component accessed data without Suspense boundary"**
-- **Cause**: Component using `use()` hook not wrapped in Suspense
+- **Cause**: Component using `use()` hook not wrapped in Suspense, or async Server Component (like Footer) called during static generation
 - **Solution**: Wrap component in `<Suspense fallback={...}>`
-- **Files affected**: Components using `useCart()` hook (CartModal, AddToCart)
+- **Files affected**: Components using `useCart()` hook (CartModal, AddToCart), Footer component in layouts
+- **Build Error Context**: If this occurs during `bun run build` for routes like `/[page]`, check that all async Server Components (especially Footer) are wrapped in Suspense boundaries
 
 **Error: "`revalidateTag` without second argument is deprecated"**
 - **Cause**: Using old single-argument `revalidateTag()` API
@@ -555,17 +600,56 @@ export default function Price({ amount }) {
 - Date/time formatting components
 - Any component using `Intl.NumberFormat`, `Intl.DateTimeFormat`, etc.
 
-### 7. Verify Build
+### 7. Fix Cart Provider for Static Generation
+
+If you get build errors like "Component accessed data without Suspense boundary" on static routes:
+
+```typescript
+// Create components/cart/cart-provider-wrapper.tsx
+import { CartProvider } from 'components/cart/cart-context';
+import { getCart } from 'lib/shopify';
+
+export async function CartProviderWrapper({ children }) {
+  const cart = getCart();
+  return <CartProvider cartPromise={cart}>{children}</CartProvider>;
+}
+
+// Update app/layout.tsx
+export default function RootLayout({ children }) {
+  return (
+    <html>
+      <body>
+        <Suspense fallback={null}>
+          <CartProviderWrapper>
+            <Navbar />
+            <main>{children}</main>
+          </CartProviderWrapper>
+        </Suspense>
+      </body>
+    </html>
+  );
+}
+```
+
+**Also wrap Footer in Suspense in all layouts:**
+```typescript
+<Suspense fallback={null}>
+  <Footer />
+</Suspense>
+```
+
+### 8. Verify Build
 
 ```bash
 bun run build
 ```
 
 Check that:
-- Static routes are marked with `○` (static)
-- Dynamic routes are marked with `λ` (server)
+- Static routes are marked with `○` (static) or `◐` (Partial Prerender)
+- Dynamic routes are marked with `ƒ` (Dynamic)
 - No deprecation warnings in console
 - No hydration mismatch warnings
+- Build completes without errors
 
 ## Client Components Reference
 
