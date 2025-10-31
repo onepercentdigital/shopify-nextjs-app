@@ -1,6 +1,7 @@
 import Prose from 'components/prose';
 import { getPage } from 'lib/shopify';
 import type { Metadata } from 'next';
+import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 
 export async function generateMetadata(props: {
@@ -25,6 +26,9 @@ export async function generateMetadata(props: {
 export default async function Page(props: {
   params: Promise<{ page: string }>;
 }) {
+  // Access uncached data first (required for Next.js 15.6+)
+  await headers();
+
   const params = await props.params;
   const page = await getPage(params.page);
 

@@ -7,6 +7,7 @@ import { HIDDEN_PRODUCT_TAG } from 'lib/constants';
 import { getProduct, getProductRecommendations } from 'lib/shopify';
 import type { Image } from 'lib/shopify/types';
 import type { Metadata } from 'next';
+import { headers } from 'next/headers';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
@@ -51,6 +52,9 @@ export async function generateMetadata(props: {
 export default async function ProductPage(props: {
   params: Promise<{ handle: string }>;
 }) {
+  // Access uncached data first (required for Next.js 15.6+)
+  await headers();
+
   const params = await props.params;
   const product = await getProduct(params.handle);
 
