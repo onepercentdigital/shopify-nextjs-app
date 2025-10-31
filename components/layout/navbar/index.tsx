@@ -11,11 +11,7 @@ import Search, { SearchSkeleton } from './search';
 const { SITE_NAME } = process.env;
 
 function OpenCartButton() {
-  return (
-    <div className="flex h-11 w-11 items-center justify-center rounded-md border border-neutral-200 bg-white text-black dark:border-neutral-700 dark:bg-black dark:text-white">
-      <OpenCart />
-    </div>
-  );
+  return <OpenCart />;
 }
 
 export async function Navbar() {
