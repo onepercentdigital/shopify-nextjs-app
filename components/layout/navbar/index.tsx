@@ -1,4 +1,5 @@
 import CartModal from 'components/cart/modal';
+import OpenCart from 'components/cart/open-cart';
 import LogoSquare from 'components/logo-square';
 import { getMenu } from 'lib/shopify';
 import type { Menu } from 'lib/shopify/types';
@@ -8,6 +9,10 @@ import MobileMenu from './mobile-menu';
 import Search, { SearchSkeleton } from './search';
 
 const { SITE_NAME } = process.env;
+
+function OpenCartButton() {
+  return <OpenCart />;
+}
 
 export async function Navbar() {
   const menu = await getMenu('next-js-frontend-header-menu');
@@ -53,7 +58,9 @@ export async function Navbar() {
           </Suspense>
         </div>
         <div className="flex justify-end md:w-1/3">
-          <CartModal />
+          <Suspense fallback={<OpenCartButton />}>
+            <CartModal />
+          </Suspense>
         </div>
       </div>
     </nav>

@@ -2,7 +2,16 @@ import { AddToCart } from 'components/cart/add-to-cart';
 import Price from 'components/price';
 import Prose from 'components/prose';
 import type { Product } from 'lib/shopify/types';
+import { Suspense } from 'react';
 import { VariantSelector } from './variant-selector';
+
+function AddToCartSkeleton() {
+  return (
+    <div className="relative flex w-full items-center justify-center rounded-full bg-blue-600 p-4 tracking-wide text-white opacity-60">
+      Add To Cart
+    </div>
+  );
+}
 
 export function ProductDescription({ product }: { product: Product }) {
   return (
@@ -23,7 +32,9 @@ export function ProductDescription({ product }: { product: Product }) {
           html={product.descriptionHtml}
         />
       ) : null}
-      <AddToCart product={product} />
+      <Suspense fallback={<AddToCartSkeleton />}>
+        <AddToCart product={product} />
+      </Suspense>
     </>
   );
 }

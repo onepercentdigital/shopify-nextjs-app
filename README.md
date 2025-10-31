@@ -14,7 +14,7 @@ This template uses React Server Components, Server Actions, `Suspense`, `useOpti
 
 ## Tech Stack
 
-- **Next.js 15** - App Router with experimental features (PPR, inline CSS, useCache)
+- **Next.js 15.6** - App Router with experimental features (Cache Components, inline CSS, useCache)
 - **React 19** - Server Components & Server Actions
 - **TypeScript 5.9** - Full type safety
 - **Tailwind CSS 4** - Utility-first styling
@@ -138,16 +138,62 @@ shopify-nextjs-app/
 
 ## Key Features
 
-- **Cart Management** - Add, update, remove items with optimistic updates
+- **Cart Management** - Add, update, remove items with optimistic updates and instant UI feedback
 - **Product Browsing** - Collections, filtering, sorting, search
 - **Image Optimization** - Automatic AVIF/WebP conversion
-- **Partial Prerendering** - Faster page loads with Next.js 15 PPR
+- **Cache Components** - Faster page loads with Next.js 15.6 Cache Components (Partial Prerendering)
 - **Server Components** - Reduced client-side JavaScript
-- **Cache Management** - Smart revalidation with Shopify webhooks
+- **Cache Management** - Smart revalidation with Shopify webhooks and path revalidation
+- **Suspense Boundaries** - Optimized data loading with proper React Suspense boundaries
 
 ## Vercel, Next.js Commerce, and Shopify Integration Guide
 
 You can use this comprehensive [integration guide](https://vercel.com/docs/integrations/ecommerce/shopify) with step-by-step instructions on how to configure Shopify as a headless CMS using Next.js Commerce as your headless Shopify storefront on Vercel.
+
+## Architecture Highlights
+
+### Static + Dynamic Hybrid Approach
+
+This application leverages Next.js 15.6's advanced caching features to provide the best of both worlds:
+
+**Static Generation (Fast, CDN-cached):**
+- Product catalog pages
+- Collection pages  
+- Search pages
+- Marketing/content pages
+
+**Dynamic Generation (User-specific):**
+- Shopping cart (in layout)
+- User-specific data
+- Real-time inventory
+
+**Key Benefits:**
+- ✅ Static pages serve from CDN with millisecond response times
+- ✅ Dynamic cart ensures each user sees their own data
+- ✅ Optimistic UI updates provide instant feedback
+- ✅ Server actions maintain data consistency
+- ✅ Minimal client-side JavaScript
+
+### Recent Updates (Next.js 15.6)
+
+The application has been updated to Next.js 15.6 with the following changes:
+
+- **Cache Components**: Replaced `experimental.ppr` with `experimental.cacheComponents` for Partial Prerendering
+- **Suspense Boundaries**: Added proper boundaries for all components using React's `use()` hook and async data fetching:
+  - Wrapped `CartModal`, `AddToCart`, and `Footer` in Suspense
+  - Created `CartProviderWrapper` to separate static shell from dynamic cart data
+  - Enables successful static page generation during build
+- **Revalidation Strategy**: Enhanced cart actions with both tag and path revalidation for instant UI updates
+- **Client Components**: Isolated dynamic behavior into small client components:
+  - `CopyrightYear` - Dynamic copyright year display
+  - `FormattedDate` - Locale-aware date formatting  
+  - `Price` - Currency formatting without hydration issues
+- **API Updates**: Updated `revalidateTag()` calls to use the new two-argument API
+- **Hydration Fixes**: Resolved hydration mismatches by moving locale-dependent formatting (`Intl.NumberFormat`, `Intl.DateTimeFormat`) to Client Components
+- **Dynamic Data Access**: Added `await headers()` before accessing `params`/`searchParams` in all routes and metadata functions
+- **Build Fixes**: Resolved prerendering errors by properly structuring async data fetching in layouts
+
+See [CLAUDE.md](./CLAUDE.md) for detailed technical documentation on these changes.
 
 ## Contributing
 
