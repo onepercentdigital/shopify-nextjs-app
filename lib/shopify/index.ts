@@ -5,11 +5,7 @@ import {
 } from 'lib/constants';
 import { isShopifyError } from 'lib/type-guards';
 import { ensureStartsWith } from 'lib/utils';
-import {
-  cacheLife,
-  cacheTag,
-  revalidateTag,
-} from 'next/cache';
+import { cacheLife, cacheTag, revalidateTag } from 'next/cache';
 import { cookies, headers } from 'next/headers';
 import { type NextRequest, NextResponse } from 'next/server';
 import {
