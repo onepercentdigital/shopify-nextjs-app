@@ -2,12 +2,12 @@
 
 ## Project Overview
 
-This is a high-performance, server-rendered Next.js 15 App Router ecommerce application that integrates with Shopify as a headless storefront. It's based on Vercel's Next.js Commerce template and demonstrates modern React patterns including Server Components, Server Actions, Suspense, and `useOptimistic`.
+This is a high-performance, server-rendered Next.js 16 App Router ecommerce application that integrates with Shopify as a headless storefront. It's based on Vercel's Next.js Commerce template and demonstrates modern React patterns including Server Components, Server Actions, Suspense, and `useOptimistic`.
 
 ## Tech Stack
 
 ### Core Framework
-- **Next.js 15.6.0-canary.57** - App Router with experimental features enabled
+- **Next.js 16.0.1** - App Router with Cache Components (Turbopack default)
 - **React 19.2.0** - Latest React with Server Components
 - **TypeScript 5.9.3** - Type-safe development
 - **Bun** - Fast JavaScript runtime and package manager
@@ -79,12 +79,12 @@ shopify-nextjs-app/
 - Webhook support for cache revalidation
 
 ### 2. Performance Optimizations
-- **Partial Prerendering (PPR)** - Experimental Next.js feature
+- **Cache Components** - Stable Next.js 16 feature for Partial Prerendering
 - **React Server Components** - Reduces client-side JavaScript
 - **Inline CSS** - Faster initial page loads
 - **Image Optimization** - AVIF and WebP formats
-- **Cache Management** - Smart revalidation with tags
-- **Turbopack** - Fast development mode bundler (via `--turbo` flag)
+- **Cache Management** - Smart revalidation with stable cache APIs
+- **Turbopack** - Default bundler in Next.js 16 (2-5× faster builds)
 
 ### 3. Shopping Experience
 - Real-time cart updates with `useOptimistic`
@@ -175,10 +175,10 @@ Server actions in `components/cart/actions.ts` handle these errors and return us
 
 ### Cache Strategy
 
-The app uses Next.js 15's new caching APIs:
+The app uses Next.js 16's stable caching APIs:
 - `'use cache'` directive for function-level caching
-- `cacheTag()` - Tag cache entries for targeted invalidation
-- `cacheLife('days')` - Set cache duration
+- `cacheTag()` - Tag cache entries for targeted invalidation (stable in Next.js 16)
+- `cacheLife('days')` - Set cache duration (stable in Next.js 16)
 - Tags: `collections`, `products`, `cart`
 
 ## TypeScript Configuration
@@ -199,18 +199,25 @@ The app uses Next.js 15's new caching APIs:
 
 ## Next.js Configuration
 
+**Stable Features:**
+- `cacheComponents: true` - Cache Components (stable in Next.js 16, enables Partial Prerendering)
+
 **Experimental Features Enabled:**
-- `cacheComponents: true` - Cache Components (replaces PPR in 15.6+, enables Partial Prerendering)
 - `inlineCss: true` - Inline critical CSS
 - `useCache: true` - New caching system
-- `enablePrerenderSourceMaps: true` - Automatically enabled by cacheComponents
-- `rdcForNavigations: true` - Automatically enabled by cacheComponents
+
+**Auto-enabled Features (via cacheComponents):**
+- `enablePrerenderSourceMaps: true` - Source maps for prerendered content
+- `rdcForNavigations: true` - Route-level dynamic content
 
 **Image Optimization:**
 - Formats: AVIF, WebP
 - Remote patterns configured for Shopify CDN
+- Default `minimumCacheTTL`: 4 hours (Next.js 16 default, up from 60s)
 
-**Note:** In Next.js 15.6+, `experimental.ppr` was renamed to `experimental.cacheComponents`. The Partial Prerendering feature is still available but is now enabled via the `cacheComponents` flag.
+**Bundler:**
+- Turbopack is the default bundler (Next.js 16+)
+- 2-5× faster production builds, up to 10× faster Fast Refresh
 
 ## Code Style
 
@@ -241,6 +248,12 @@ The project uses **Biome** for both linting and formatting:
 **Current Branch:** `upgrade/nextjs16`
 
 **Recent Changes:**
+- **Next.js 16.0.1 Upgrade** - Migrated from 15.6.0-canary.57 to 16.0.1
+  - Removed `unstable_` prefix from cache APIs (`cacheLife`, `cacheTag`)
+  - Moved `cacheComponents` from experimental to stable configuration
+  - Turbopack is now the default bundler
+  - Verified all async request APIs compatibility
+  - Build performance improved with Turbopack (2-5× faster)
 - **Next.js 15.6 Upgrade** - Migrated from 15.4 to 15.6 canary
   - Updated `experimental.ppr` to `experimental.cacheComponents`
   - Added required Suspense boundaries for components using `use()` hook
@@ -283,10 +296,24 @@ The project uses **Biome** for both linting and formatting:
 
 ## Important Notes & Gotchas
 
-### Next.js 15.6 Specific Requirements
+### Next.js 16 Requirements
+
+**Minimum Versions:**
+- Node.js 20.9.0+ required (Node.js 18 no longer supported)
+- TypeScript 5.1.0+ required
+- Bun 1.0.0+ recommended
+
+**Turbopack as Default Bundler:**
+- Next.js 16 uses Turbopack by default (no `--turbo` flag needed)
+- To opt out and use Webpack: `bun run build -- --webpack`
+- No custom webpack config exists in this project, so Turbopack works seamlessly
+
+**Stable Cache APIs:**
+- `cacheLife()` and `cacheTag()` are now stable (no `unstable_` prefix)
+- `cacheComponents` is now a top-level config option (not experimental)
 
 **Suspense Boundaries for Dynamic Data:**
-With `experimental.cacheComponents` enabled, components that access dynamic data require proper Suspense boundaries:
+With `cacheComponents` enabled, components that access dynamic data require proper Suspense boundaries:
 
 ```typescript
 // ✅ Correct: Component using use() wrapped in Suspense

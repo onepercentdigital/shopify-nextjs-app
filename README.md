@@ -14,7 +14,7 @@ This template uses React Server Components, Server Actions, `Suspense`, `useOpti
 
 ## Tech Stack
 
-- **Next.js 15.6.0-canary.57** - App Router with experimental features (Cache Components, inline CSS, useCache)
+- **Next.js 16.0.1** - App Router with Cache Components (Turbopack default)
 - **React 19.2.0** - Server Components & Server Actions
 - **TypeScript 5.9.3** - Full type safety
 - **Tailwind CSS 4.1.16** - Utility-first styling
@@ -155,7 +155,7 @@ You can use this comprehensive [integration guide](https://vercel.com/docs/integ
 
 ### Static + Dynamic Hybrid Approach
 
-This application leverages Next.js 15.6's advanced caching features to provide the best of both worlds:
+This application leverages Next.js 16's stable Cache Components to provide the best of both worlds:
 
 **Static Generation (Fast, CDN-cached):**
 - Product catalog pages
@@ -175,11 +175,19 @@ This application leverages Next.js 15.6's advanced caching features to provide t
 - ✅ Server actions maintain data consistency
 - ✅ Minimal client-side JavaScript
 
-### Recent Updates (Next.js 15.6.0-canary.57)
+### Recent Updates (Next.js 16.0.1)
 
-The application has been updated to Next.js 15.6 canary with the following changes:
+The application has been upgraded to Next.js 16.0.1 with the following improvements:
 
-- **Cache Components**: Replaced `experimental.ppr` with `experimental.cacheComponents` for Partial Prerendering
+**Next.js 16 Migration:**
+- **Stable Cache APIs**: Removed `unstable_` prefix from `cacheLife()` and `cacheTag()` imports
+- **Cache Components**: Moved `cacheComponents` to top-level config (now stable, no longer experimental)
+- **Turbopack Default**: Now uses Turbopack by default for 2-5× faster production builds
+- **Node.js 20.9+**: Updated minimum version requirement (Node.js 18 no longer supported)
+- **Build Performance**: Significantly faster builds and Hot Module Replacement with Turbopack
+
+**Previous Next.js 15.6 Updates:**
+- **Partial Prerendering**: Replaced `experimental.ppr` with `cacheComponents` configuration
 - **Suspense Boundaries**: Added proper boundaries for all components using React's `use()` hook and async data fetching:
   - Wrapped `CartModal`, `AddToCart`, and `Footer` in Suspense
   - Created `CartProviderWrapper` to separate static shell from dynamic cart data
