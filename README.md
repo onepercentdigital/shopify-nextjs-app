@@ -141,10 +141,10 @@ shopify-nextjs-app/
 - **Cart Management** - Add, update, remove items with optimistic updates and instant UI feedback
 - **Product Browsing** - Collections, filtering, sorting, search
 - **Image Optimization** - Automatic AVIF/WebP conversion with Shopify CDN
-- **Partial Prerendering** - Next.js 15.6 Cache Components for optimal static/dynamic rendering
-- **Server Components** - Reduced client-side JavaScript (15 Client Components only)
-- **Cache Management** - Smart revalidation with tagged cache entries and path revalidation
-- **Suspense Boundaries** - Optimized data loading with proper React Suspense boundaries
+- **Cache Components** - Next.js 16 stable Partial Prerendering for optimal static/dynamic rendering
+- **Server Components** - Reduced client-side JavaScript (19 Client Components only)
+- **Cache Management** - Smart revalidation with stable cache APIs (`cacheLife`, `cacheTag`)
+- **Turbopack** - Default bundler for 2-5× faster builds
 - **Type Safety** - Full TypeScript coverage with strict mode enabled
 
 ## Vercel, Next.js Commerce, and Shopify Integration Guide
@@ -175,37 +175,23 @@ This application leverages Next.js 16's stable Cache Components to provide the b
 - ✅ Server actions maintain data consistency
 - ✅ Minimal client-side JavaScript
 
-### Recent Updates (Next.js 16.0.1)
+### Recent Updates
 
-The application has been upgraded to Next.js 16.0.1 with the following improvements:
+**Next.js 16.0.1 (Current):**
+- Stable Cache APIs (`cacheLife`, `cacheTag` without `unstable_` prefix)
+- Cache Components moved to top-level config (graduated from experimental)
+- Turbopack as default bundler (2-5× faster production builds)
+- Node.js 20.9+ required (Node 18 support dropped)
+- Enhanced build performance and Hot Module Replacement
 
-**Next.js 16 Migration:**
-- **Stable Cache APIs**: Removed `unstable_` prefix from `cacheLife()` and `cacheTag()` imports
-- **Cache Components**: Moved `cacheComponents` to top-level config (now stable, no longer experimental)
-- **Turbopack Default**: Now uses Turbopack by default for 2-5× faster production builds
-- **Node.js 20.9+**: Updated minimum version requirement (Node.js 18 no longer supported)
-- **Build Performance**: Significantly faster builds and Hot Module Replacement with Turbopack
+**Architecture:**
+- 19 Client Components for interactive features (cart, navigation, forms)
+- Server Components for static content (product pages, collections)
+- Partial Prerendering with stable Cache Components
+- Optimistic UI updates with `useOptimistic` hook
+- Smart cache invalidation with `revalidateTag()` and `revalidatePath()`
 
-**Previous Next.js 15.6 Updates:**
-- **Partial Prerendering**: Replaced `experimental.ppr` with `cacheComponents` configuration
-- **Suspense Boundaries**: Added proper boundaries for all components using React's `use()` hook and async data fetching:
-  - Wrapped `CartModal`, `AddToCart`, and `Footer` in Suspense
-  - Created `CartProviderWrapper` to separate static shell from dynamic cart data
-  - Enables successful static page generation during build
-- **Revalidation Strategy**: Enhanced cart actions with both tag and path revalidation for instant UI updates
-- **Client Components**: Isolated dynamic behavior into 15 small Client Components:
-  - `Price` - Currency formatting without hydration issues
-  - `CopyrightYear` - Dynamic copyright year display
-  - `FormattedDate` - Locale-aware date formatting  
-  - Cart components (`modal.tsx`, `add-to-cart.tsx`, `delete-item-button.tsx`, etc.)
-  - Navigation components (`search.tsx`, `mobile-menu.tsx`)
-- **API Updates**: Updated `revalidateTag()` calls to use the new two-argument API (`revalidateTag(tag, 'max')`)
-- **Hydration Fixes**: Resolved hydration mismatches by moving locale-dependent formatting (`Intl.NumberFormat`, `Intl.DateTimeFormat`) to Client Components
-- **Dynamic Data Access**: Added `await headers()` before accessing `params`/`searchParams` in all routes and metadata functions
-- **Build Fixes**: Resolved prerendering errors by properly structuring async data fetching in layouts
-- **Code Quality**: Migrated from ESLint/Prettier to Biome for faster linting and formatting
-
-See [CLAUDE.md](./CLAUDE.md) for detailed technical documentation on these changes.
+See [CLAUDE.md](./CLAUDE.md) for detailed technical documentation.
 
 ## Contributing
 
