@@ -1,6 +1,7 @@
 'use client';
 
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
+import clsx from 'clsx';
 import type { SortFilterItem } from 'lib/constants';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -54,10 +55,10 @@ export default function FilterItemDropdown({ list }: { list: ListItem[] }) {
       <button
         type="button"
         onClick={() => setOpenSelect((s) => !s)}
-        className={
-          'flex w-full items-center justify-between rounded-sm ' +
-          'border border-black/30 px-4 py-2 text-sm dark:border-white/30'
-        }
+        className={clsx(
+          'flex w-full items-center justify-between rounded-sm',
+          'border border-black/30 px-4 py-2 text-sm dark:border-white/30',
+        )}
       >
         <div>{activeTitle}</div>
         <ChevronDownIcon className="h-4" />

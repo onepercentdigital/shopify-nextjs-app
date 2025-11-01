@@ -65,7 +65,7 @@ function SortFilterItemComponent({ item }: { item: SortFilterItem }) {
 
   return (
     <li
-      className="mt-2 flex text-sm text-black dark:text-white"
+      className="mt-2 flex text-black text-sm dark:text-white"
       key={item.title}
     >
       {active ? (

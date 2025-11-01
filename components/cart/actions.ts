@@ -24,7 +24,7 @@ export async function addItem(
     await addToCart([{ merchandiseId: selectedVariantId, quantity: 1 }]);
     revalidateTag(TAGS.cart, 'max');
     revalidatePath('/', 'layout');
-  } catch (e) {
+  } catch (_e) {
     return 'Error adding item to cart';
   }
 }
@@ -41,14 +41,14 @@ export async function removeItem(_prevState: any, merchandiseId: string) {
       (line) => line.merchandise.id === merchandiseId,
     );
 
-    if (lineItem && lineItem.id) {
+    if (lineItem?.id) {
       await removeFromCart([lineItem.id]);
       revalidateTag(TAGS.cart, 'max');
       revalidatePath('/', 'layout');
     } else {
       return 'Item not found in cart';
     }
-  } catch (e) {
+  } catch (_e) {
     return 'Error removing item from cart';
   }
 }
@@ -73,7 +73,7 @@ export async function updateItemQuantity(
       (line) => line.merchandise.id === merchandiseId,
     );
 
-    if (lineItem && lineItem.id) {
+    if (lineItem?.id) {
       if (quantity === 0) {
         await removeFromCart([lineItem.id]);
       } else {
@@ -100,7 +100,12 @@ export async function updateItemQuantity(
 
 export async function redirectToCheckout() {
   const cart = await getCart();
-  redirect(cart!.checkoutUrl);
+
+  if (!cart?.checkoutUrl) {
+    throw new Error('No checkout URL available');
+  }
+
+  redirect(cart.checkoutUrl);
 }
 
 export async function createCartAndSetCookie() {

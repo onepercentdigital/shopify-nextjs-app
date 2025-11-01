@@ -14,11 +14,11 @@ This template uses React Server Components, Server Actions, `Suspense`, `useOpti
 
 ## Tech Stack
 
-- **Next.js 15.6** - App Router with experimental features (Cache Components, inline CSS, useCache)
-- **React 19** - Server Components & Server Actions
-- **TypeScript 5.9** - Full type safety
-- **Tailwind CSS 4** - Utility-first styling
-- **Biome** - Fast linting and formatting
+- **Next.js 16.0.1** - App Router with Cache Components (Turbopack default)
+- **React 19.2.0** - Server Components & Server Actions
+- **TypeScript 5.9.3** - Full type safety
+- **Tailwind CSS 4.1.16** - Utility-first styling
+- **Biome 2.3.2** - Fast linting and formatting
 - **Bun** - Fast JavaScript runtime and package manager
 - **Shopify Storefront API** - Headless commerce integration
 
@@ -140,11 +140,12 @@ shopify-nextjs-app/
 
 - **Cart Management** - Add, update, remove items with optimistic updates and instant UI feedback
 - **Product Browsing** - Collections, filtering, sorting, search
-- **Image Optimization** - Automatic AVIF/WebP conversion
-- **Cache Components** - Faster page loads with Next.js 15.6 Cache Components (Partial Prerendering)
-- **Server Components** - Reduced client-side JavaScript
-- **Cache Management** - Smart revalidation with Shopify webhooks and path revalidation
-- **Suspense Boundaries** - Optimized data loading with proper React Suspense boundaries
+- **Image Optimization** - Automatic AVIF/WebP conversion with Shopify CDN
+- **Cache Components** - Next.js 16 stable Partial Prerendering for optimal static/dynamic rendering
+- **Server Components** - Reduced client-side JavaScript (19 Client Components only)
+- **Cache Management** - Smart revalidation with stable cache APIs (`cacheLife`, `cacheTag`)
+- **Turbopack** - Default bundler for 2-5× faster builds
+- **Type Safety** - Full TypeScript coverage with strict mode enabled
 
 ## Vercel, Next.js Commerce, and Shopify Integration Guide
 
@@ -154,7 +155,7 @@ You can use this comprehensive [integration guide](https://vercel.com/docs/integ
 
 ### Static + Dynamic Hybrid Approach
 
-This application leverages Next.js 15.6's advanced caching features to provide the best of both worlds:
+This application leverages Next.js 16's stable Cache Components to provide the best of both worlds:
 
 **Static Generation (Fast, CDN-cached):**
 - Product catalog pages
@@ -174,26 +175,23 @@ This application leverages Next.js 15.6's advanced caching features to provide t
 - ✅ Server actions maintain data consistency
 - ✅ Minimal client-side JavaScript
 
-### Recent Updates (Next.js 15.6)
+### Recent Updates
 
-The application has been updated to Next.js 15.6 with the following changes:
+**Next.js 16.0.1 (Current):**
+- Stable Cache APIs (`cacheLife`, `cacheTag` without `unstable_` prefix)
+- Cache Components moved to top-level config (graduated from experimental)
+- Turbopack as default bundler (2-5× faster production builds)
+- Node.js 20.9+ required (Node 18 support dropped)
+- Enhanced build performance and Hot Module Replacement
 
-- **Cache Components**: Replaced `experimental.ppr` with `experimental.cacheComponents` for Partial Prerendering
-- **Suspense Boundaries**: Added proper boundaries for all components using React's `use()` hook and async data fetching:
-  - Wrapped `CartModal`, `AddToCart`, and `Footer` in Suspense
-  - Created `CartProviderWrapper` to separate static shell from dynamic cart data
-  - Enables successful static page generation during build
-- **Revalidation Strategy**: Enhanced cart actions with both tag and path revalidation for instant UI updates
-- **Client Components**: Isolated dynamic behavior into small client components:
-  - `CopyrightYear` - Dynamic copyright year display
-  - `FormattedDate` - Locale-aware date formatting  
-  - `Price` - Currency formatting without hydration issues
-- **API Updates**: Updated `revalidateTag()` calls to use the new two-argument API
-- **Hydration Fixes**: Resolved hydration mismatches by moving locale-dependent formatting (`Intl.NumberFormat`, `Intl.DateTimeFormat`) to Client Components
-- **Dynamic Data Access**: Added `await headers()` before accessing `params`/`searchParams` in all routes and metadata functions
-- **Build Fixes**: Resolved prerendering errors by properly structuring async data fetching in layouts
+**Architecture:**
+- 19 Client Components for interactive features (cart, navigation, forms)
+- Server Components for static content (product pages, collections)
+- Partial Prerendering with stable Cache Components
+- Optimistic UI updates with `useOptimistic` hook
+- Smart cache invalidation with `revalidateTag()` and `revalidatePath()`
 
-See [CLAUDE.md](./CLAUDE.md) for detailed technical documentation on these changes.
+See [CLAUDE.md](./CLAUDE.md) for detailed technical documentation.
 
 ## Contributing
 

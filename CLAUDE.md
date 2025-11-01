@@ -2,13 +2,13 @@
 
 ## Project Overview
 
-This is a high-performance, server-rendered Next.js 15 App Router ecommerce application that integrates with Shopify as a headless storefront. It's based on Vercel's Next.js Commerce template and demonstrates modern React patterns including Server Components, Server Actions, Suspense, and `useOptimistic`.
+This is a high-performance, server-rendered Next.js 16 App Router ecommerce application that integrates with Shopify as a headless storefront. It's based on Vercel's Next.js Commerce template and demonstrates modern React patterns including Server Components, Server Actions, Suspense, and `useOptimistic`.
 
 ## Tech Stack
 
 ### Core Framework
-- **Next.js 15.6.0-canary.57** - App Router with experimental features enabled
-- **React 19.1.1** - Latest React with Server Components
+- **Next.js 16.0.1** - App Router with Cache Components (Turbopack default)
+- **React 19.2.0** - Latest React with Server Components
 - **TypeScript 5.9.3** - Type-safe development
 - **Bun** - Fast JavaScript runtime and package manager
 
@@ -79,12 +79,12 @@ shopify-nextjs-app/
 - Webhook support for cache revalidation
 
 ### 2. Performance Optimizations
-- **Partial Prerendering (PPR)** - Experimental Next.js feature
+- **Cache Components** - Stable Next.js 16 feature for Partial Prerendering
 - **React Server Components** - Reduces client-side JavaScript
 - **Inline CSS** - Faster initial page loads
 - **Image Optimization** - AVIF and WebP formats
-- **Cache Management** - Smart revalidation with tags
-- **Turbopack** - Fast development mode bundler (via `--turbo` flag)
+- **Cache Management** - Smart revalidation with stable cache APIs
+- **Turbopack** - Default bundler in Next.js 16 (2-5× faster builds)
 
 ### 3. Shopping Experience
 - Real-time cart updates with `useOptimistic`
@@ -175,10 +175,10 @@ Server actions in `components/cart/actions.ts` handle these errors and return us
 
 ### Cache Strategy
 
-The app uses Next.js 15's new caching APIs:
+The app uses Next.js 16's stable caching APIs:
 - `'use cache'` directive for function-level caching
-- `cacheTag()` - Tag cache entries for targeted invalidation
-- `cacheLife('days')` - Set cache duration
+- `cacheTag()` - Tag cache entries for targeted invalidation (stable in Next.js 16)
+- `cacheLife('days')` - Set cache duration (stable in Next.js 16)
 - Tags: `collections`, `products`, `cart`
 
 ## TypeScript Configuration
@@ -199,18 +199,25 @@ The app uses Next.js 15's new caching APIs:
 
 ## Next.js Configuration
 
+**Stable Features:**
+- `cacheComponents: true` - Cache Components (stable in Next.js 16, enables Partial Prerendering)
+
 **Experimental Features Enabled:**
-- `cacheComponents: true` - Cache Components (replaces PPR in 15.6+, enables Partial Prerendering)
 - `inlineCss: true` - Inline critical CSS
 - `useCache: true` - New caching system
-- `enablePrerenderSourceMaps: true` - Automatically enabled by cacheComponents
-- `rdcForNavigations: true` - Automatically enabled by cacheComponents
+
+**Auto-enabled Features (via cacheComponents):**
+- `enablePrerenderSourceMaps: true` - Source maps for prerendered content
+- `rdcForNavigations: true` - Route-level dynamic content
 
 **Image Optimization:**
 - Formats: AVIF, WebP
 - Remote patterns configured for Shopify CDN
+- Default `minimumCacheTTL`: 4 hours (Next.js 16 default, up from 60s)
 
-**Note:** In Next.js 15.6+, `experimental.ppr` was renamed to `experimental.cacheComponents`. The Partial Prerendering feature is still available but is now enabled via the `cacheComponents` flag.
+**Bundler:**
+- Turbopack is the default bundler (Next.js 16+)
+- 2-5× faster production builds, up to 10× faster Fast Refresh
 
 ## Code Style
 
@@ -238,9 +245,15 @@ The project uses **Biome** for both linting and formatting:
 ## Git Workflow
 
 **Main Branch:** `main`
-**Current Branch:** `update/test`
+**Current Branch:** `upgrade/nextjs16`
 
 **Recent Changes:**
+- **Next.js 16.0.1 Upgrade** - Migrated from 15.6.0-canary.57 to 16.0.1
+  - Removed `unstable_` prefix from cache APIs (`cacheLife`, `cacheTag`)
+  - Moved `cacheComponents` from experimental to stable configuration
+  - Turbopack is now the default bundler
+  - Verified all async request APIs compatibility
+  - Build performance improved with Turbopack (2-5× faster)
 - **Next.js 15.6 Upgrade** - Migrated from 15.4 to 15.6 canary
   - Updated `experimental.ppr` to `experimental.cacheComponents`
   - Added required Suspense boundaries for components using `use()` hook
@@ -283,10 +296,24 @@ The project uses **Biome** for both linting and formatting:
 
 ## Important Notes & Gotchas
 
-### Next.js 15.6 Specific Requirements
+### Next.js 16 Requirements
+
+**Minimum Versions:**
+- Node.js 20.9.0+ required (Node.js 18 no longer supported)
+- TypeScript 5.1.0+ required
+- Bun 1.0.0+ recommended
+
+**Turbopack as Default Bundler:**
+- Next.js 16 uses Turbopack by default (no `--turbo` flag needed)
+- To opt out and use Webpack: `bun run build -- --webpack`
+- No custom webpack config exists in this project, so Turbopack works seamlessly
+
+**Stable Cache APIs:**
+- `cacheLife()` and `cacheTag()` are now stable (no `unstable_` prefix)
+- `cacheComponents` is now a top-level config option (not experimental)
 
 **Suspense Boundaries for Dynamic Data:**
-With `experimental.cacheComponents` enabled, components that access dynamic data require proper Suspense boundaries:
+With `cacheComponents` enabled, components that access dynamic data require proper Suspense boundaries:
 
 ```typescript
 // ✅ Correct: Component using use() wrapped in Suspense
@@ -317,17 +344,6 @@ function DynamicDate() {
 </Suspense>
 ```
 
-**revalidateTag API Update:**
-Next.js 15.6 requires a second argument for `revalidateTag()`:
-
-```typescript
-// ✅ Correct: Two arguments
-revalidateTag(TAGS.cart, 'max');
-
-// ❌ Deprecated: Single argument
-revalidateTag(TAGS.cart);
-```
-
 **Cart Updates and Revalidation:**
 Cart server actions use both `revalidateTag()` and `revalidatePath()`:
 - `revalidateTag(TAGS.cart, 'max')` - For tagged cache entries
@@ -352,7 +368,8 @@ All locale-dependent formatting must be in Client Components to avoid hydration 
 - Small performance impact (~3-4KB) for correct behavior
 
 ### Server Action Architecture
-When working with Next.js 15 experimental features (PPR, useCache), keep server action architecture **flat and simple**:
+
+Keep server action architecture **flat and simple**:
 
 ✅ **Good Pattern:**
 ```typescript
@@ -369,7 +386,7 @@ export async function addItem() {
 }
 ```
 
-**Why:** Deep nesting of server-only API calls (like `cookies()`) in Server Actions can cause webpack module resolution errors with Next.js 15's experimental features.
+**Why:** Deep nesting of server-only API calls (like `cookies()`) in Server Actions can cause module resolution errors.
 
 ### Cart Provider Architecture
 
@@ -431,64 +448,56 @@ export default function RootLayout({ children }) {
 
 ## Troubleshooting
 
-### Common Next.js 15.6 Migration Issues
+### Common Issues
 
-**Error: "Route used `new Date()` before accessing uncached data"**
-- **Cause**: Calling `new Date()` in Server Component before accessing dynamic data
-- **Solution**: Call `await headers()` before `new Date()`, or move to Client Component
-- **Best Practice**: Move any dynamic time logic to small Client Components
-- **Files affected**: Product pages, search pages, footer components
-
-**Error: "Hydration failed because server rendered HTML didn't match client"**
+**Hydration Mismatch Errors:**
 - **Cause**: Using `Intl.NumberFormat` or `Intl.DateTimeFormat` in Server Components
-- **Reason**: Server and client locales differ, causing different formatted output
-- **Solution**: Move all `Intl` formatting to Client Components
-- **Files affected**: `components/price.tsx`, `components/formatted-date.tsx`
-- **Note**: `suppressHydrationWarning` doesn't fix this in Next.js 15.6
+- **Solution**: Move all locale-dependent formatting to Client Components
+- **Files**: `components/price.tsx`, `components/formatted-date.tsx`, `components/layout/copyright-year.tsx`
 
-**Error: "Component accessed data without Suspense boundary"**
-- **Cause**: Component using `use()` hook not wrapped in Suspense, or async Server Component (like Footer) called during static generation
+**Suspense Boundary Errors:**
+- **Cause**: Component using `use()` hook not wrapped in Suspense
 - **Solution**: Wrap component in `<Suspense fallback={...}>`
-- **Files affected**: Components using `useCart()` hook (CartModal, AddToCart), Footer component in layouts
-- **Build Error Context**: If this occurs during `bun run build` for routes like `/[page]`, check that all async Server Components (especially Footer) are wrapped in Suspense boundaries
+- **Files**: Components using cart context, product context
 
-**Error: "`revalidateTag` without second argument is deprecated"**
-- **Cause**: Using old single-argument `revalidateTag()` API
-- **Solution**: Add second argument: `revalidateTag(tag, 'max')`
-- **Files affected**: Cart server actions, webhook handlers
+**Cart Not Updating:**
+- **Cause**: Missing revalidation in server actions
+- **Solution**: Ensure both `revalidateTag(TAGS.cart, 'max')` and `revalidatePath('/', 'layout')` are called
+- **File**: `components/cart/actions.ts`
 
-**Cart not updating after adding items**
-- **Cause**: Missing `revalidatePath()` call in server actions
-- **Solution**: Add `revalidatePath('/', 'layout')` after cart mutations
-- **Files affected**: `components/cart/actions.ts`
+**Build Errors on Static Routes:**
+- **Cause**: Async Server Components accessed during static generation without Suspense
+- **Solution**: Wrap async components (like Footer) in Suspense boundaries
+- **Context**: Check layout files and page components
 
-**Pages showing as fully dynamic when they should be static**
-- **Cause**: Accessing `cookies()` or `headers()` in page components
-- **Solution**: Only access dynamic data in layout or specific dynamic components
-- **Note**: Cart data in layout is intentionally dynamic - product pages remain static
+**Turbopack Build Issues:**
+- **Cause**: Incompatible webpack-specific configuration
+- **Solution**: Use `--webpack` flag to opt out, or migrate to Turbopack-compatible setup
+- **Note**: This project has no custom webpack config, so Turbopack works seamlessly
 
 ### Development Tips
 
-1. **Check Build Output**: Run `bun run build` to see which routes are static vs dynamic
-2. **Monitor Console**: Watch for deprecation warnings during development
-3. **Test Without Cache**: Clear `.next` folder if seeing stale behavior
+1. **Check Build Output**: Run `bun run build` to see route prerendering status (○ static, ◐ partial prerender, ƒ dynamic)
+2. **Monitor Console**: Watch for warnings during development
+3. **Clear Cache**: Run `rm -rf .next` if seeing stale behavior
 4. **Verify Suspense**: Use React DevTools to check Suspense boundaries
-5. **Check Network Tab**: Verify optimistic updates and server responses
+5. **Test Caching**: Remember dev mode disables caching - test cache behavior in production build
 
 ## Testing Considerations
 
-When working on this project:
-1. Always test cart operations (add, update, remove)
-2. Verify cart updates appear without page refresh (optimistic updates)
-3. Verify mobile responsiveness
-4. Check image loading and optimization
-5. Test search and filter functionality
-6. Validate TypeScript types with `bun run type`
-7. Ensure Biome checks pass with `bun run check:all`
-8. Test with empty cart state (no cartId cookie)
-9. Test cart operations after clearing cookies
-10. Verify Suspense boundaries don't cause loading flashes
-11. Check console for Next.js 15.6 prerendering warnings
+**Essential Tests:**
+1. Cart operations (add, update, remove) with optimistic updates
+2. Cart persistence across page navigation
+3. Mobile responsiveness (use network URL for device testing)
+4. Image optimization (check AVIF/WebP formats)
+5. Search and filter functionality
+6. Empty cart state handling
+
+**Code Quality:**
+7. TypeScript validation: `bun run type`
+8. Biome checks: `bun run check:all`
+9. Production build: `bun run build` (verify Partial Prerender routes)
+10. Check console for warnings (none expected in Next.js 16)
 
 ## Deployment
 
@@ -498,194 +507,50 @@ Optimized for deployment on Vercel:
 - Edge-ready with React Server Components
 - Optimized for CDN delivery
 - Uses Bun runtime for faster builds
-
-## Migration Guide: Next.js 15.4 → 15.6
-
-If you're upgrading from Next.js 15.4 (or earlier) to 15.6, follow these steps:
-
-### 1. Update Configuration
-
-```typescript
-// next.config.ts
-export default {
-  experimental: {
-    cacheComponents: true,  // Changed from: ppr: true
-    inlineCss: true,
-    useCache: true,
-  },
-  // ... rest of config
-};
-```
-
-### 2. Update revalidateTag Calls
-
-```typescript
-// Before
-revalidateTag(TAGS.cart);
-
-// After
-revalidateTag(TAGS.cart, 'max');
-```
-
-### 3. Add Suspense Boundaries
-
-Wrap components using `use()` hook in Suspense:
-
-```typescript
-// Before
-<ComponentUsingUseHook />
-
-// After
-<Suspense fallback={<Skeleton />}>
-  <ComponentUsingUseHook />
-</Suspense>
-```
-
-### 4. Fix new Date() Usage
-
-**Option A - Server Component:**
-```typescript
-export default async function MyComponent() {
-  await headers(); // Access uncached data first
-  const year = new Date().getFullYear();
-  // ...
-}
-```
-
-**Option B - Client Component (Preferred):**
-```typescript
-// components/dynamic-date.tsx
-'use client';
-export default function DynamicDate() {
-  const year = new Date().getFullYear();
-  return <>{year}</>;
-}
-
-// In Server Component
-<Suspense fallback="2025">
-  <DynamicDate />
-</Suspense>
-```
-
-### 5. Add Cart Revalidation
-
-```typescript
-// components/cart/actions.ts
-export async function addItem(...) {
-  await addToCart([...]);
-  revalidateTag(TAGS.cart, 'max');
-  revalidatePath('/', 'layout'); // Add this line
-}
-```
-
-### 6. Fix Locale-Dependent Formatting
-
-Move all `Intl` usage to Client Components:
-
-```typescript
-// Before (Server Component - causes hydration mismatch)
-export default function Price({ amount }) {
-  return <p>{new Intl.NumberFormat(undefined, {...}).format(amount)}</p>;
-}
-
-// After (Client Component)
-'use client';
-export default function Price({ amount }) {
-  return <p>{new Intl.NumberFormat(undefined, {...}).format(amount)}</p>;
-}
-```
-
-**Components requiring 'use client' for Intl:**
-- Price formatting components
-- Date/time formatting components
-- Any component using `Intl.NumberFormat`, `Intl.DateTimeFormat`, etc.
-
-### 7. Fix Cart Provider for Static Generation
-
-If you get build errors like "Component accessed data without Suspense boundary" on static routes:
-
-```typescript
-// Create components/cart/cart-provider-wrapper.tsx
-import { CartProvider } from 'components/cart/cart-context';
-import { getCart } from 'lib/shopify';
-
-export async function CartProviderWrapper({ children }) {
-  const cart = getCart();
-  return <CartProvider cartPromise={cart}>{children}</CartProvider>;
-}
-
-// Update app/layout.tsx
-export default function RootLayout({ children }) {
-  return (
-    <html>
-      <body>
-        <Suspense fallback={null}>
-          <CartProviderWrapper>
-            <Navbar />
-            <main>{children}</main>
-          </CartProviderWrapper>
-        </Suspense>
-      </body>
-    </html>
-  );
-}
-```
-
-**Also wrap Footer in Suspense in all layouts:**
-```typescript
-<Suspense fallback={null}>
-  <Footer />
-</Suspense>
-```
-
-### 8. Verify Build
-
-```bash
-bun run build
-```
-
-Check that:
-- Static routes are marked with `○` (static) or `◐` (Partial Prerender)
-- Dynamic routes are marked with `ƒ` (Dynamic)
-- No deprecation warnings in console
-- No hydration mismatch warnings
-- Build completes without errors
+- Turbopack default for production builds
 
 ## Client Components Reference
 
-This project uses **15 Client Components** to handle interactive features and locale-dependent formatting:
+This project uses **19 Client Components** to handle interactive features and locale-dependent formatting:
 
-**Cart & Commerce:**
-1. `cart/modal.tsx` - Shopping cart modal
-2. `cart/add-to-cart.tsx` - Add to cart button with form
+
+
+**Cart & Commerce (5 components):**
+1. `cart/modal.tsx` - Shopping cart modal with open/close state
+2. `cart/add-to-cart.tsx` - Add to cart button with form actions
 3. `cart/delete-item-button.tsx` - Remove item from cart
 4. `cart/edit-item-quantity-button.tsx` - Update item quantity
 5. `cart/cart-context.tsx` - Cart state management with `use()` hook
 
-**Navigation & Search:**
+**Navigation & Search (5 components):**
 6. `layout/navbar/search.tsx` - Search input with state
 7. `layout/navbar/mobile-menu.tsx` - Mobile navigation menu
 8. `layout/search/filter/item.tsx` - Filter checkbox item
-9. `layout/search/filter/dropdown.tsx` - Filter dropdown menu
+9. `layout/search/filter/dropdown.tsx` - Filter dropdown menu with clsx
 10. `layout/footer-menu.tsx` - Footer menu with state
 
-**Product:**
+**Product Display (3 components):**
 11. `product/product-context.tsx` - Product state management
+12. `product/gallery.tsx` - Image gallery with navigation
+13. `product/variant-selector.tsx` - Product variant selection
 
-**Formatting & Display (Locale-dependent):**
-12. `price.tsx` - Price formatting with `Intl.NumberFormat`
-13. `formatted-date.tsx` - Date formatting with `Intl.DateTimeFormat`
-14. `layout/copyright-year.tsx` - Dynamic copyright year
+**Formatting & Display (3 components):**
+14. `price.tsx` - Price formatting with `Intl.NumberFormat`
+15. `formatted-date.tsx` - Date formatting with `Intl.DateTimeFormat`
+16. `layout/copyright-year.tsx` - Dynamic copyright year
 
-**Other:**
-15. `welcome-toast.tsx` - Welcome toast notification
+**App-Level (3 components):**
+17. `app/error.tsx` - Error boundary component
+18. `app/search/children-wrapper.tsx` - Search layout wrapper
+19. `welcome-toast.tsx` - Welcome toast notification
 
 **Why These Are Client Components:**
-- Use React hooks (`useState`, `useEffect`, etc.)
-- Handle browser events (`onClick`, `onChange`, etc.)
+- Use React hooks (`useState`, `useEffect`, `useRef`, etc.)
+- Handle browser events (`onClick`, `onChange`, `onKeyDown`, etc.)
 - Access browser APIs (`window`, `document`)
-- Use `use()` hook for promises
-- Perform locale-dependent formatting (`Intl`)
+- Use `use()` hook for promises (cart context, product context)
+- Perform locale-dependent formatting (`Intl.NumberFormat`, `Intl.DateTimeFormat`)
+- Require client-side interactivity (modals, forms, navigation)
 
 ## Additional Resources
 
